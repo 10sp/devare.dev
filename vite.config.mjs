@@ -35,8 +35,8 @@ export default defineConfig(({ mode }) => {
       viteTsconfigPaths(),
       svgrPlugin(),
       sentryVitePlugin({
-        org: 'hackertabdev',
-        project: 'hackertab',
+        org: 'devaredev',
+        project: 'devare',
         authToken: env.VITE_SENTRY_TOKEN,
         disable: mode === 'development',
         release: {

@@ -54,7 +54,7 @@ The collection includes requests for:
 - Medium articles (by tag)
 - Reddit articles (by tag)
 
-Each request uses the `{{base_url}}` variable, which is set to `https://api.hackertab.dev` by default. You can modify this variable in Postman to point to your local development server or a different environment.
+Each request uses the `{{base_url}}` variable, which is set to `https://api.devare.dev` by default. You can modify this variable in Postman to point to your local development server or a different environment.
 
 ### Example Usage
 
@@ -63,6 +63,7 @@ Each request uses the `{{base_url}}` variable, which is set to `https://api.hack
 3. View the response in the lower panel
 
 For parameterized requests (like GitHub repositories), you can modify the path variables:
+
 1. Click on the request
 2. Modify the URL path variables in the address bar
 3. Click "Send" to make the request with your parameters

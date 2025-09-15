@@ -20,7 +20,8 @@ export const Header = () => {
   const { openAuthModal, user, isConnected, isConnecting } = useAuth()
 
   const [themeIcon, setThemeIcon] = useState(<BsMoonFill />)
-  const { theme, setTheme, setDNDDuration, isDNDModeActive, layout, setLayout } = useUserPreferences()
+  const { theme, setTheme, setDNDDuration, isDNDModeActive, layout, setLayout } =
+    useUserPreferences()
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -68,7 +69,7 @@ export const Header = () => {
             <CgTab />
           </i>{' '}
           <Link to="/">
-            <HackertabLogo aria-label="hackertab.dev" className="logoText" />
+            <HackertabLogo aria-label="devare.dev" className="logoText" />
           </Link>
           <Changelog />
         </span>

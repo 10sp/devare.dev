@@ -237,7 +237,7 @@
     "variable": [
         {
             "key": "base_url",
-            "value": "https://api.hackertab.dev",
+            "value": "https://api.devare.dev",
             "type": "string"
         }
     ]

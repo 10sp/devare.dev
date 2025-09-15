@@ -1,5 +1,5 @@
 .\script\build-chrome.bat
-PS C:\Users\shivg\wkspace\web-experiments\hackertab.dev> .\script\build-chrome.bat
+PS C:\Users\shivg\wkspace\web-experiments\devare.dev> .\script\build-chrome.bat
 building extension for Chrome...
 Generate Chrome manifest
 Remove previous zipped extension
@@ -10,6 +10,7 @@ $ VITE_BUILD_TARGET=extension ./script/build.sh
 operable program or batch file.
 error Command failed with exit code 1.
 info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.
+
 # Auto-Scrolling Feature for Card Dragging
 
 This document explains the implementation of the auto-scrolling feature when dragging cards in the Hackertab.dev application.

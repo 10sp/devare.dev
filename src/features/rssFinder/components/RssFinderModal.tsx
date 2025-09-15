@@ -5,6 +5,7 @@ import { trackRssSourceAdd } from 'src/lib/analytics'
 import { useUserPreferences } from 'src/stores/preferences'
 import { SupportedCardType } from 'src/types'
 import { detectRssFeeds, validateRssFeed } from '../api/detectRssFeeds'
+import { RssContentEditor } from './RssContentEditor'
 import './rssFinderModal.css'
 
 type RssFeed = {
@@ -26,6 +27,8 @@ export const RssFinderModal = ({ isOpen, onClose, urlToCheck }: Props) => {
   const [validatedFeeds, setValidatedFeeds] = useState<Record<string, boolean>>({})
   const [selectedFeeds, setSelectedFeeds] = useState<Record<string, boolean>>({})
   const [error, setError] = useState<string | null>(null)
+  const [isContentEditorOpen, setIsContentEditorOpen] = useState(false)
+  const [selectedFeedForEditing, setSelectedFeedForEditing] = useState<RssFeed | null>(null)
 
   const { userCustomCards, setUserCustomCards, cards, setCards } = useUserPreferences()
 
@@ -167,6 +170,11 @@ export const RssFinderModal = ({ isOpen, onClose, urlToCheck }: Props) => {
     }))
   }
 
+  const openContentEditor = (feed: RssFeed) => {
+    setSelectedFeedForEditing(feed)
+    setIsContentEditorOpen(true)
+  }
+
   return (
     <Modal showModal={isOpen} onClose={onClose} header={{ title: 'RSS Feed Finder' }}>
       <div className="rss-finder-modal">
@@ -223,6 +231,12 @@ export const RssFinderModal = ({ isOpen, onClose, urlToCheck }: Props) => {
                       {validatedFeeds[feed.url] === undefined && (
                         <span className="status checking">Checking...</span>
                       )}
+                      <button
+                        onClick={() => openContentEditor(feed)}
+                        className="edit-content-button"
+                        disabled={!validatedFeeds[feed.url]}>
+                        Edit Content
+                      </button>
                     </div>
                   </div>
                 ))}
@@ -243,6 +257,11 @@ export const RssFinderModal = ({ isOpen, onClose, urlToCheck }: Props) => {
           )}
         </div>
       </div>
+      <RssContentEditor
+        isOpen={isContentEditorOpen}
+        onClose={() => setIsContentEditorOpen(false)}
+        feed={selectedFeedForEditing || { url: '', title: '', type: '' }}
+      />
     </Modal>
   )
 }

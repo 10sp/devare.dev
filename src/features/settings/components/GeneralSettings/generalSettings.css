@@ -63,40 +63,40 @@
 /**
 Select styles
 **/
-.hackertab__control {
+.devare__control {
   background-color: var(--card-background-color) !important;
   border-color: var(--tag-border-color) !important;
 }
-.hackertab__indicator-separator {
+.devare__indicator-separator {
   background-color: var(--tag-secondary-color) !important;
 }
-.hackertab__indicator {
+.devare__indicator {
   color: var(--tag-secondary-color) !important;
 }
-.hackertab__multi-value {
+.devare__multi-value {
   background-color: var(--tag-background-color) !important;
   border-color: var(--tag-background-color) !important;
   border-radius: 20px !important;
 }
-.hackertab__multi-value__label {
+.devare__multi-value__label {
   color: var(--tag-text-color) !important;
 }
-.hackertab__menu {
+.devare__menu {
   background-color: var(--card-background-color) !important;
 }
-.hackertab__option {
+.devare__option {
   color: var(--tag-input-background) !important;
   background-color: var(--card-background-color) !important;
 }
-.hackertab__single-value {
+.devare__single-value {
   color: var(--primary-text-color) !important;
 }
 
-.hackertab__option--is-focused {
+.devare__option--is-focused {
   background: var(--tag-background-color) !important;
   color: var(--tag-text-color) !important;
 }
-.hackertab__multi-value__remove {
+.devare__multi-value__remove {
   border-radius: 20px !important;
   color: var(--tag-secondary-color) !important;
 }

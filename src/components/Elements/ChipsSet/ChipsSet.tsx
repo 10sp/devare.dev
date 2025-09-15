@@ -17,6 +17,18 @@ const Chip = ({ option, onSelect, onRemove, active = false }: ChipProps) => {
         {option.icon && <span className="chipIcon">{option.icon}</span>}
         {option.label}
       </button>
+      {option.actions &&
+        option.actions.map((action, index) => (
+          <button
+            key={index}
+            className="chip-action"
+            onClick={(e) => {
+              e.stopPropagation()
+              action.onClick()
+            }}>
+            {action.label}
+          </button>
+        ))}
       {option.removeable && onRemove && (
         <button className="deleteButton" onClick={() => onRemove(option)}>
           <IoIosClose className="icon" />

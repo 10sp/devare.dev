@@ -27,6 +27,7 @@ const ArticleItem = (props: BaseItemPropsType<Article>) => {
               [Attributes.SOURCE]: analyticsTag,
               [Attributes.LANGUAGE]: selectedTag?.value,
             }}>
+            {item.image_url && <img className="rssImage" src={item.image_url} alt={item.title} />}
             <div className="subTitle">{item.title}</div>
           </CardLink>
           <>

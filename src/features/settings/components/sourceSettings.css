@@ -36,6 +36,23 @@
   background-color: #4338ca;
 }
 
+/* Edit button for RSS cards */
+.chip-action {
+  margin-left: 8px;
+  padding: 2px 6px;
+  background-color: #60a5fa;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.chip-action:hover {
+  background-color: #3b82f6;
+}
+
 @media (max-width: 768px) {
   .sources-actions {
     justify-content: center;

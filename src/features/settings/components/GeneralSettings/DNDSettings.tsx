@@ -97,7 +97,7 @@ export const DNDSettings = () => {
               isClearable={false}
               isSearchable={false}
               defaultValue={getDefaultValue()}
-              classNamePrefix={'hackertab'}
+              classNamePrefix={'devare'}
               onChange={onPeriodSelect}
             />
           </div>

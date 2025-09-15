@@ -67,9 +67,7 @@ export const ImportExportSettings = () => {
       const dataStr = JSON.stringify(exportData, null, 2)
       const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr)
 
-      const exportFileDefaultName = `hackertab-settings-${new Date()
-        .toISOString()
-        .slice(0, 10)}.json`
+      const exportFileDefaultName = `devare-settings-${new Date().toISOString().slice(0, 10)}.json`
 
       const linkElement = document.createElement('a')
       linkElement.setAttribute('href', dataUri)

@@ -7,12 +7,12 @@
     "newtab": "index.html"
   },
   "host_permissions": [
-    "https://*.hackertab.dev/*"
+    "https://*.devare.dev/*"
   ],
   "content_scripts": [
     {
       "matches": [
-        "https://hackertab.dev/*"
+        "https://devare.dev/*"
       ],
       "run_at": "document_start",
       "js": [

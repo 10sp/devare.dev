@@ -1,0 +1,164 @@
+.rss-content-editor {
+  padding: 20px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.rss-content-editor .feed-info {
+  margin-bottom: 20px;
+  padding: 15px;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+}
+
+.rss-content-editor .feed-info h3 {
+  margin: 0 0 10px 0;
+  color: #333;
+}
+
+.rss-content-editor .feed-info p {
+  margin: 0;
+  color: #666;
+  font-size: 14px;
+}
+
+.rss-content-editor .articles-list h4 {
+  margin: 20px 0 15px 0;
+  color: #333;
+}
+
+.articles-container {
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.article-item {
+  padding: 15px;
+  border-bottom: 1px solid #eee;
+  transition: background-color 0.2s;
+}
+
+.article-item:last-child {
+  border-bottom: none;
+}
+
+.article-item.selected {
+  background-color: #e3f2fd;
+}
+
+.article-item:hover {
+  background-color: #f9f9f9;
+}
+
+.article-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+}
+
+.article-info {
+  flex: 1;
+}
+
+.article-info h5 {
+  margin: 0 0 8px 0;
+  color: #333;
+  font-size: 16px;
+}
+
+.article-url {
+  margin: 0 0 8px 0;
+  color: #0066cc;
+  font-size: 13px;
+  word-break: break-all;
+}
+
+.article-description {
+  margin: 8px 0;
+  color: #666;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.article-author {
+  margin: 8px 0;
+  color: #888;
+  font-size: 13px;
+  font-style: italic;
+}
+
+.article-tags {
+  margin: 10px 0 0 0;
+}
+
+.article-tags .tag {
+  display: inline-block;
+  background-color: #e0e0e0;
+  color: #555;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  margin-right: 5px;
+  margin-bottom: 5px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+}
+
+.create-card-button {
+  background-color: #4f46e5;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.create-card-button:hover:not(:disabled) {
+  background-color: #4338ca;
+}
+
+.create-card-button:disabled {
+  background-color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.cancel-button {
+  background-color: #f3f4f6;
+  color: #374151;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.cancel-button:hover {
+  background-color: #e5e7eb;
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+}
+
+.error-message {
+  background-color: #fee;
+  color: #c33;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  border: 1px solid #fcc;
+}

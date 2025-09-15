@@ -6,6 +6,7 @@ import { StateStorage, createJSONStorage, persist } from 'zustand/middleware'
 import {
   CardSettingsType,
   DNDDuration,
+  EditableContent,
   Layout,
   ListingMode,
   SearchEngineType,
@@ -34,28 +35,41 @@ export type UserPreferencesState = {
   isOrganizeMode: boolean
 }
 
+// Add the isDNDModeActive function
+export const isDNDModeActive = (DNDDuration: DNDDuration): boolean => {
+  if (DNDDuration === 'always') {
+    return true
+  } else if (typeof DNDDuration === 'object' && DNDDuration !== null) {
+    // Type guard to ensure DNDDuration is the object type
+    const dndObject = DNDDuration as { value: number; countdown: number }
+    return Boolean(dndObject.value && dndObject.countdown - new Date().getTime() > 0)
+  } else {
+    return false
+  }
+}
+
 type UserPreferencesStoreActions = {
   setLayout: (layout: Layout) => void
   setTheme: (theme: Theme) => void
   setPromptEngine: (engine: string) => void
   setOpenLinksNewTab: (openLinksNewTab: boolean) => void
   setListingMode: (listingMode: ListingMode) => void
-  setCards: (selectedCards: SelectedCard[]) => void
   setTags: (selectedTags: Tag[]) => void
   setMaxVisibleCards: (maxVisibleCards: number) => void
+  initState: (newState: UserPreferencesState) => void
+  setCards: (selectedCards: SelectedCard[]) => void
   setCardSettings: (card: string, settings: CardSettingsType) => void
   markOnboardingAsCompleted: (occupation: Omit<Occupation, 'icon'> | null) => void
   setUserCustomCards: (cards: SupportedCardType[]) => void
+  updateUserCustomCards: (cards: SupportedCardType[]) => void
   updateCardOrder: (prevIndex: number, newIndex: number) => void
-  setDNDDuration: (value: DNDDuration) => void
-  isDNDModeActive: () => boolean
-  addSearchEngine: (searchEngine: SearchEngineType) => void
-  removeSearchEngine: (searchEngineUrl: string) => void
+  // Add new action for updating editable content
+  updateEditableContent: (cardValue: string, content: EditableContent[]) => void
   // Add organize mode actions
   setIsOrganizeMode: (isOrganizeMode: boolean) => void
-  // Add import/export actions
-  setOnboardingCompleted: (completed: boolean) => void
-  setFirstSeenDate: (date: number) => void
+  setDNDDuration: (duration: DNDDuration) => void
+  // Add DND mode active function
+  isDNDModeActive: () => boolean
 }
 
 const defaultStorage: StateStorage = {
@@ -176,54 +190,55 @@ export const useUserPreferences = create(
           onboardingResult: occupation,
         })),
       setUserCustomCards: (cards: SupportedCardType[]) => set({ userCustomCards: cards }),
+      updateUserCustomCards: (cards: SupportedCardType[]) => set({ userCustomCards: cards }),
       updateCardOrder: (prevIndex: number, newIndex: number) =>
         set((state) => {
           const updated = [...state.cards]
           const [movedItem] = updated.splice(prevIndex, 1)
           updated.splice(newIndex, 0, movedItem)
-
-          const newState = updated.map((card, index) => {
-            return {
-              ...card,
-              id: index,
-            }
-          })
-
-          return { cards: newState }
+          return { cards: updated }
         }),
-      setDNDDuration: (value: DNDDuration) => set({ DNDDuration: value }),
-      isDNDModeActive: () => {
-        const duration = get().DNDDuration
-        if (duration === 'always') {
-          return true
-        } else if (typeof duration === 'object') {
-          const dndValue = duration as {
-            value: number
-            countdown: number
-          }
-          return Boolean(dndValue.value && dndValue.countdown - new Date().getTime() > 0)
-        } else {
-          return false
-        }
-      },
-      addSearchEngine: (engine: SearchEngineType) =>
-        set((state) => {
-          return { promptEngines: [...state.promptEngines, engine] }
-        }),
-      removeSearchEngine: (engine: string) =>
-        set((state) => {
-          return {
-            promptEngines: state.promptEngines.filter((se) => se.url !== engine),
-          }
-        }),
+      // Add new action for updating editable content
+      updateEditableContent: (cardValue: string, content: EditableContent[]) =>
+        set((state) => ({
+          userCustomCards: state.userCustomCards.map((card) =>
+            card.value === cardValue ? { ...card, editableContent: content } : card
+          ),
+        })),
+      // Add organize mode actions
       setIsOrganizeMode: (isOrganizeMode: boolean) => set({ isOrganizeMode }),
-      // New import/export actions
-      setOnboardingCompleted: (completed: boolean) => set({ onboardingCompleted: completed }),
-      setFirstSeenDate: (date: number) => set({ firstSeenDate: date }),
+      setDNDDuration: (duration: DNDDuration) => set({ DNDDuration: duration }),
+      // Add DND mode active function
+      isDNDModeActive: () => {
+        const state = get()
+        return isDNDModeActive(state.DNDDuration)
+      },
     }),
     {
-      name: 'preferences_storage',
-      storage: createJSONStorage(() => defaultStorage),
+      name: 'user-preferences',
+      storage: createJSONStorage(() => localStorage),
+      /*partialize: (state: UserPreferencesState & UserPreferencesStoreActions) => {
+        // Extract only the state properties to persist
+        const stateToPersist: UserPreferencesState = {
+          userSelectedTags: state.userSelectedTags,
+          layout: state.layout,
+          theme: state.theme,
+          openLinksNewTab: state.openLinksNewTab,
+          onboardingCompleted: state.onboardingCompleted,
+          onboardingResult: state.onboardingResult,
+          listingMode: state.listingMode,
+          promptEngine: state.promptEngine,
+          promptEngines: state.promptEngines,
+          maxVisibleCards: state.maxVisibleCards,
+          cards: state.cards,
+          cardsSettings: state.cardsSettings,
+          firstSeenDate: state.firstSeenDate,
+          userCustomCards: state.userCustomCards,
+          DNDDuration: state.DNDDuration,
+          isOrganizeMode: state.isOrganizeMode,
+        };
+        return stateToPersist;
+      },*/
     }
   )
 )

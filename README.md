@@ -1,5 +1,5 @@
 [![Website hackertab.dev](https://img.shields.io/website-up-down-green-red/https/hackertab.dev.svg)](https://hackertab.dev/)
-[![Apache 2 license](https://img.shields.io/badge/license-Apache%202-blue.svg)](https://github.com/medyo/hackertab.dev/blob/master/LICENSE)
+[![Apache 2 license](https://img.shields.io/badge/license-Apache%202-blue.svg)](https://github.com/10sp/devare.dev/blob/master/LICENSE)
 [![Mozilla Add-on](https://img.shields.io/amo/v/hackertab-dev?style=plastic)](https://bit.ly/hackertab-ff)
 [![Chrome Web Store](https://img.shields.io/chrome-web-store/v/ocoipcahhaedjhnpoanfflhbdcpmalmp?style=plastic)](https://bit.ly/hackertab-ch)
 [![Chrome Web Store Rating](https://img.shields.io/chrome-web-store/stars/ocoipcahhaedjhnpoanfflhbdcpmalmp.svg?colorB=%234FC828&label=rating&style=flat)](https://chrome.google.com/webstore/detail/hackertabdev/ocoipcahhaedjhnpoanfflhbdcpmalmp/reviews)
@@ -33,6 +33,8 @@ As a developer, it can be difficult to stay on top of everything happening in th
 - 🌙 Dark mode for when it gets late.
 - ✨ AI-powered recommendations exclusively tailored to your preferences.
 - 🔍 RSS Feed Finder - Automatically detects RSS feeds on websites and prompts you to add them to your feed.
+- ✏️ RSS Content Editor - Create custom cards by selecting specific articles from RSS feeds
+- 🔄 RSS Content Reordering - Reorganize articles within custom RSS cards using drag and drop
 
 Even more features are going to come in the future!
 
@@ -51,6 +53,8 @@ Even more features are going to come in the future!
 - Indiehackers
 - Custom RSS Feed
 - **RSS Feed Finder** - Automatically discover and add RSS feeds from any website
+- **RSS Content Editor** - Create custom cards by selecting specific articles from RSS feeds
+- **RSS Content Reordering** - Reorganize articles within custom RSS cards using drag and drop
 - **or create an issue to ask for a new data source**
 
 ## New Logo
@@ -59,7 +63,7 @@ HackerTab now features a new, simplified logo design! The logo is a clean "HT" m
 
 ## Support
 
-Please do not hesitate to ask a question, report a bug or add a suggestion. or send an email to hello@hackertab.dev
+Please do not hesitate to ask a question, report a bug or add a suggestion. or send an email to hello@devare.dev
 
 ## Development
 
@@ -69,7 +73,7 @@ This project requires Node.js version 18.x. You can use NVM (Node Version Manage
 
 ```bash
 $ git clone --branch develop git@github.com:medyo/hackertab.dev.git
-$ cd hackertab.dev
+$ cd devare.dev
 $ nvm use
 $ yarn
 $ yarn start

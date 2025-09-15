@@ -3,10 +3,10 @@ import { BiExport, BiImport } from 'react-icons/bi'
 import { Button, ChipsSet, ConfirmModal } from 'src/components/Elements'
 import { SettingsContentLayout } from 'src/components/Layout/SettingsContentLayout/SettingsContentLayout'
 import { SUPPORTED_CARDS } from 'src/config/supportedCards'
-import { RssFinderModal } from 'src/features/rssFinder'
+import { RssContentEditor, RssFinderModal } from 'src/features/rssFinder'
 import { trackSourceAdd, trackSourceRemove } from 'src/lib/analytics'
 import { useUserPreferences } from 'src/stores/preferences'
-import { Option, SelectedCard } from 'src/types'
+import { Option, SelectedCard, SupportedCardType } from 'src/types'
 import { RssSetting } from './RssSetting'
 import './sourceSettings.css'
 
@@ -20,6 +20,10 @@ export const SourceSettings = () => {
     option: undefined,
   })
   const [showRssFinder, setShowRssFinder] = useState(false)
+  const [showRssEditor, setShowRssEditor] = useState(false)
+  const [selectedCardForEditing, setSelectedCardForEditing] = useState<SupportedCardType | null>(
+    null
+  )
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const mergedSources = useMemo(() => {
@@ -38,7 +42,14 @@ export const SourceSettings = () => {
           label: source.label,
           value: source.value,
           removeable: true,
-          icon: <img src={source.icon as string} alt="" />,
+          icon: source.icon ? <img src={source.icon as string} alt="" /> : undefined,
+          // Add edit action for custom RSS cards
+          actions: [
+            {
+              label: 'Edit Content',
+              onClick: () => handleEditRssCard(source),
+            },
+          ],
         }
       }),
     ].sort((a, b) => (a.label > b.label ? 1 : -1))
@@ -56,7 +67,7 @@ export const SourceSettings = () => {
     const dataStr = JSON.stringify(exportData, null, 2)
     const dataUri = `data:application/json;charset=utf-8,${encodeURIComponent(dataStr)}`
 
-    const exportFileDefaultName = `hackertab-sources-${new Date().toISOString().slice(0, 10)}.json`
+    const exportFileDefaultName = `devare-sources-${new Date().toISOString().slice(0, 10)}.json`
 
     const linkElement = document.createElement('a')
     linkElement.setAttribute('href', dataUri)
@@ -103,6 +114,12 @@ export const SourceSettings = () => {
     reader.readAsText(file)
   }
 
+  // Open RSS content editor for a specific card
+  const handleEditRssCard = (card: SupportedCardType) => {
+    setSelectedCardForEditing(card)
+    setShowRssEditor(true)
+  }
+
   return (
     <SettingsContentLayout
       title="Sources"
@@ -125,6 +142,20 @@ export const SourceSettings = () => {
           />
         </div>
         <RssFinderModal isOpen={showRssFinder} onClose={() => setShowRssFinder(false)} />
+        <RssContentEditor
+          isOpen={showRssEditor}
+          onClose={() => setShowRssEditor(false)}
+          feed={
+            selectedCardForEditing
+              ? {
+                  url: selectedCardForEditing.feedUrl || '',
+                  title: selectedCardForEditing.label,
+                  type: 'rss',
+                }
+              : { url: '', title: '', type: '' }
+          }
+          existingCard={selectedCardForEditing || undefined}
+        />
         <ConfirmModal
           showModal={confirmDelete.showModal}
           title={`Confirm ${confirmDelete.option?.isCustom ? 'delete' : 'remove'} source: ${

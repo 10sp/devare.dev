@@ -1,10 +1,11 @@
 import { CgIndieHackers } from 'react-icons/cg'
-import { FaDev, FaFreeCodeCamp, FaMediumM, FaReddit } from 'react-icons/fa'
+import { FaDev, FaFreeCodeCamp, FaMediumM } from 'react-icons/fa'
 import { HiSparkles, HiTicket } from 'react-icons/hi'
 import { SiGithub, SiProducthunt, SiYcombinator } from 'react-icons/si'
 import HashNodeIcon from 'src/assets/icon_hashnode.png'
 import LobstersIcon from 'src/assets/icon_lobsters.png'
 import { AICard } from 'src/features/cards/components/aiCard'
+import { EditableContentCard } from 'src/features/cards/components/editableContentCard/EditableContentCard'
 import { SupportedCardType } from 'src/types'
 import { lazyImport } from 'src/utils/lazyImport'
 const { MediumCard } = lazyImport(() => import('src/features/cards'), 'MediumCard')
@@ -66,15 +67,6 @@ export const SUPPORTED_CARDS: SupportedCardType[] = [
     type: 'supported',
   },
   {
-    value: 'reddit',
-    icon: <FaReddit color="#FF4500" />,
-    analyticsTag: 'reddit',
-    label: 'Reddit',
-    component: RedditCard,
-    link: 'https://reddit.com/',
-    type: 'supported',
-  },
-  {
     value: 'lobsters',
     icon: <img alt="lobsters" src={LobstersIcon} />,
     analyticsTag: 'lobsters',
@@ -127,5 +119,13 @@ export const SUPPORTED_CARDS: SupportedCardType[] = [
     component: AICard,
     type: 'supported',
     badge: 'BETA',
+  },
+  {
+    value: 'editable-content',
+    icon: <HiSparkles color="#4F46E5" />,
+    analyticsTag: 'editable-content',
+    label: 'Editable Content',
+    component: EditableContentCard,
+    type: 'supported',
   },
 ]

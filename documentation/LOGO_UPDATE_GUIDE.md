@@ -6,7 +6,7 @@ This document explains how to update the logos for the HackerTab project.
 
 We've created new SVG logo files:
 
-1. `public/logos/hackertab-logo.svg` - Main logo for use in the app
+1. `public/logos/devare-logo.svg` - Main logo for use in the app
 2. `public/favicon.svg` - Simplified logo for favicon use
 3. `public/logos/logoVector-new.svg` - The original text-based logo you provided
 
@@ -34,7 +34,7 @@ To update the PNG logo files, you'll need to convert the SVG files to PNG format
 2. **Command Line Tools**:
 
    - Install ImageMagick: `npm install -g imagemagick`
-   - Convert with: `convert -background none -resize 128x128 public/logos/hackertab-logo.svg public/logos/logo128.png`
+   - Convert with: `convert -background none -resize 128x128 public/logos/devare-logo.svg public/logos/logo128.png`
 
 3. **Graphic Design Software**:
    - Use tools like Adobe Illustrator, Inkscape, or Figma
@@ -55,7 +55,7 @@ To update the PNG logo files, you'll need to convert the SVG files to PNG format
 3. Update `public/web_manifest.json` to reference the new SVG logo:
    ```json
    {
-     "src": "/logos/hackertab-logo.svg",
+     "src": "/logos/devare-logo.svg",
      "type": "image/svg+xml",
      "sizes": "128x128"
    }
@@ -68,7 +68,7 @@ To update the PNG logo files, you'll need to convert the SVG files to PNG format
 
 ## Logo Design Notes
 
-The new `hackertab-logo.svg` features a simplified "HT" monogram:
+The new `devare-logo.svg` features a simplified "HT" monogram:
 
 - "H" formed with three rectangles (two vertical bars and one horizontal bar)
 - "T" formed with two rectangles (one horizontal bar and one vertical bar)

@@ -1,0 +1,38 @@
+.sortable-article-item {
+  position: relative;
+}
+
+.article-drag-handle {
+  position: absolute;
+  left: -20px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  cursor: grab;
+  z-index: 101;
+  color: var(--primary-text-color);
+  padding: 4px;
+  border-radius: 4px;
+}
+
+.article-drag-handle:hover {
+  background-color: var(--card-background-color);
+}
+
+.organizeMode .article-drag-handle {
+  display: block;
+}
+
+.article-drag-handle {
+  display: none;
+}
+
+.rssImage {
+  width: 100%;
+  height: auto;
+  max-height: 200px;
+  object-fit: cover;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}

@@ -10,17 +10,17 @@ export const SENTRY_DSN = import.meta.env.VITE_SENTRY_DSN
 // Meta
 export const name = 'Hackertab.dev'
 export const slogan = '— Stay updated with the new technology and trends'
-export const repository = 'https://github.com/medyo/hackertab.dev'
-export const ref = 'ref=hackertab.dev'
-export const contactEmail = 'hello@hackertab.dev'
+export const repository = 'https://github.com/10sp/devare.dev'
+export const ref = 'ref=devare.dev'
+export const contactEmail = 'hello@devare.dev'
 export const maxCardsPerRow = 4
-export const supportLink = 'https://github.com/medyo/hackertab.dev/issues'
-export const privacyPolicyLink = 'https://www.hackertab.dev/privacy-policy'
-export const termsAndConditionsLink = 'https://www.hackertab.dev/terms-and-conditions'
-export const dataSourcesLink = 'https://www.hackertab.dev/data-sources'
-export const changeLogLink = 'https://api.github.com/repos/medyo/hackertab.dev/releases'
-export const twitterHandle = '@hackertabdev'
-export const reportLink = 'https://www.hackertab.dev/report'
+export const supportLink = 'https://github.com/10sp/devare.dev/issues'
+export const privacyPolicyLink = 'https://www.devare.dev/privacy-policy'
+export const termsAndConditionsLink = 'https://www.devare.dev/terms-and-conditions'
+export const dataSourcesLink = 'https://www.devare.dev/data-sources'
+export const changeLogLink = 'https://api.github.com/repos/10sp/devare.dev/releases'
+export const twitterHandle = '@devaredev'
+export const reportLink = 'https://www.devare.dev/report'
 
 export const LS_PREFERENCES_KEY = 'hackerTabPrefs'
 export const GLOBAL_TAG = {

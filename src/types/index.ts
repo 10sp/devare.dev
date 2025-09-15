@@ -114,6 +114,19 @@ export type SupportedCardType = {
   feedUrl?: string
   icon?: React.ReactNode | string
   badge?: string
+  customContent?: Article[]
+  // Add editable content property
+  editableContent?: EditableContent[]
+}
+
+// Add new type for editable content
+export type EditableContent = {
+  id: string
+  title: string
+  description: string
+  url?: string
+  tags?: string[]
+  published_at?: number
 }
 
 export type CardPropsType = {
@@ -145,6 +158,10 @@ export type Option = {
   icon?: React.ReactNode
   removeable?: boolean
   isCustom?: boolean
+  actions?: Array<{
+    label: string
+    onClick: () => void
+  }>
 }
 
 export type DNDDuration =

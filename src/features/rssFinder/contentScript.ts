@@ -56,13 +56,13 @@ const detectRssFeedsInPage = (): Array<{ url: string; title: string; type: strin
 // Function to show notification to user
 const showRssNotification = (feeds: Array<{ url: string; title: string; type: string }>) => {
   // Check if notification already exists
-  if (document.getElementById('hackertab-rss-notification')) {
+  if (document.getElementById('devare-rss-notification')) {
     return
   }
 
   // Create notification element
   const notification = document.createElement('div')
-  notification.id = 'hackertab-rss-notification'
+  notification.id = 'devare-rss-notification'
   notification.style.cssText = `
     position: fixed;
     top: 20px;
@@ -86,7 +86,7 @@ const showRssNotification = (feeds: Array<{ url: string; title: string; type: st
     <p>${feeds.length} RSS feed(s) detected on this page.</p>
     <div style="display: flex; gap: 10px; margin-top: 15px;">
       <button id="rss-add-btn" style="flex: 1; background: #4f46e5; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer;">
-        Add to HackerTab
+        Add to Devare
       </button>
       <button id="rss-ignore-btn" style="flex: 1; background: #555; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer;">
         Ignore

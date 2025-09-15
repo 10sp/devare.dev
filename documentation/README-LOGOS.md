@@ -4,7 +4,7 @@ This folder contains the new logo assets for HackerTab.
 
 ## Logo Files
 
-1. `hackertab-logo.svg` - Main logo for the application
+1. `devare-logo.svg` - Main logo for the application
 2. `favicon.svg` - Simplified logo for favicon use
 3. `logoVector-new.svg` - The original text-based logo you provided
 
