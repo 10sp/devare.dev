@@ -29,8 +29,9 @@ export type UserPreferencesState = {
   cardsSettings: Record<string, CardSettingsType>
   firstSeenDate: number
   userCustomCards: SupportedCardType[]
-  advStatus: boolean
   DNDDuration: DNDDuration
+  // Add organize mode state
+  isOrganizeMode: boolean
 }
 
 type UserPreferencesStoreActions = {
@@ -50,7 +51,11 @@ type UserPreferencesStoreActions = {
   isDNDModeActive: () => boolean
   addSearchEngine: (searchEngine: SearchEngineType) => void
   removeSearchEngine: (searchEngineUrl: string) => void
-  setAdvStatus: (status: boolean) => void
+  // Add organize mode actions
+  setIsOrganizeMode: (isOrganizeMode: boolean) => void
+  // Add import/export actions
+  setOnboardingCompleted: (completed: boolean) => void
+  setFirstSeenDate: (date: number) => void
 }
 
 const defaultStorage: StateStorage = {
@@ -145,7 +150,7 @@ export const useUserPreferences = create(
       ],
       userCustomCards: [],
       DNDDuration: 'never',
-      advStatus: false,
+      isOrganizeMode: false,
       setLayout: (layout) => set({ layout: layout }),
       setPromptEngine: (promptEngine: string) => set({ promptEngine: promptEngine }),
       setListingMode: (listingMode: ListingMode) => set({ listingMode: listingMode }),
@@ -211,7 +216,10 @@ export const useUserPreferences = create(
             promptEngines: state.promptEngines.filter((se) => se.url !== engine),
           }
         }),
-      setAdvStatus: (status) => set({ advStatus: status }),
+      setIsOrganizeMode: (isOrganizeMode: boolean) => set({ isOrganizeMode }),
+      // New import/export actions
+      setOnboardingCompleted: (completed: boolean) => set({ onboardingCompleted: completed }),
+      setFirstSeenDate: (date: number) => set({ firstSeenDate: date }),
     }),
     {
       name: 'preferences_storage',

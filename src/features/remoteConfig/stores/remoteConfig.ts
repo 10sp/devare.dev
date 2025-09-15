@@ -21,7 +21,7 @@ export const useRemoteConfigStore = create(
       adsConfig: {
         rowPosition: 0,
         columnPosition: 0,
-        enabled: false,
+        enabled: false, // Disable ads by default
       },
       supportedTags: [
         {

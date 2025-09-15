@@ -12,6 +12,7 @@ const { SearchEngineSettings } = lazyImport(
 )
 const { BookmarkSettings } = lazyImport(() => import('src/features/settings'), 'BookmarkSettings')
 const { TopicSettings } = lazyImport(() => import('src/features/settings'), 'TopicSettings')
+// Removed ImportExportSettings import since we're integrating it into Sources
 
 export const AppRoutes = () => {
   return (
@@ -23,6 +24,7 @@ export const AppRoutes = () => {
             <Route path="topics" element={<TopicSettings />} />
             <Route path="sources" element={<SourceSettings />} />
             <Route path="ai-engine" element={<SearchEngineSettings />} />
+            {/* Removed import-export route since we're integrating it into Sources */}
             <Route path="general" element={<GeneralSettings />} />
           </Route>
           <Route path="*" index element={<App />} />

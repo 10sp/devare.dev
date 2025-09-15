@@ -9,7 +9,7 @@ import { useGetGithubRepos } from '../../api/getGithubRepos'
 import RepoItem from './RepoItem'
 
 export function GithubCard(props: CardPropsType) {
-  const { meta, withAds, knob } = props
+  const { meta, knob } = props
   const { userSelectedTags, cardsSettings, setCardSettings } = useUserPreferences()
 
   const selectedTag =

@@ -17,6 +17,7 @@ import { UserInfo } from '../UserSettings/UserInfo'
 import { CardsNumberSettings } from './CardsNumberSettings'
 import { DNDSettings } from './DNDSettings'
 import './generalSettings.css'
+import { ImportExportSettings } from './ImportExportSettings'
 import { LayoutSettings } from './LayoutSettings'
 
 export const GeneralSettings = () => {
@@ -89,6 +90,8 @@ export const GeneralSettings = () => {
         </div>
 
         <DNDSettings />
+
+        <ImportExportSettings />
 
         <DeleteAccount />
 

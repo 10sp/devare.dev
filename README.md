@@ -32,6 +32,7 @@ As a developer, it can be difficult to stay on top of everything happening in th
 - 🔖 Bookmark and read it later.
 - 🌙 Dark mode for when it gets late.
 - ✨ AI-powered recommendations exclusively tailored to your preferences.
+- 🔍 RSS Feed Finder - Automatically detects RSS feeds on websites and prompts you to add them to your feed.
 
 Even more features are going to come in the future!
 
@@ -49,7 +50,12 @@ Even more features are going to come in the future!
 - Medium
 - Indiehackers
 - Custom RSS Feed
+- **RSS Feed Finder** - Automatically discover and add RSS feeds from any website
 - **or create an issue to ask for a new data source**
+
+## New Logo
+
+HackerTab now features a new, simplified logo design! The logo is a clean "HT" monogram that's easily recognizable even at small sizes. See `documentation/README-LOGOS.md` for details on how to update the logos.
 
 ## Support
 
@@ -59,13 +65,18 @@ Please do not hesitate to ask a question, report a bug or add a suggestion. or s
 
 Please use the develop branch. Create an .env file with the necessary env variables
 
+This project requires Node.js version 18.x. You can use NVM (Node Version Manager) to manage your Node.js versions.
+
 ```bash
 $ git clone --branch develop git@github.com:medyo/hackertab.dev.git
 $ cd hackertab.dev
+$ nvm use
 $ yarn
 $ yarn start
 $ # Then visit http://localhost:3000
 ```
+
+The `.nvmrc` file in the project root specifies the exact Node.js version (18.20.0) that should be used. Running `nvm use` will automatically switch to this version if you have it installed. If you don't have this version installed, you can install it with `nvm install`.
 
 ## Maintainers
 

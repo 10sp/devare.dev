@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { BsFillBookmarksFill, BsFillGearFill, BsMoonFill } from 'react-icons/bs'
 import { CgTab } from 'react-icons/cg'
 import { IoMdSunny } from 'react-icons/io'
-import { MdDoDisturbOff } from 'react-icons/md'
+import { MdDoDisturbOff, MdGridView } from 'react-icons/md'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import AvatarPlaceholder from 'src/assets/icons/avatar.svg?react'
 import StreakIcon from 'src/assets/icons/fire_icon.svg?react'
@@ -15,11 +15,12 @@ import { Changelog } from 'src/features/changelog'
 import { identifyUserTheme, trackDNDDisable, trackThemeSelect } from 'src/lib/analytics'
 import { useUserPreferences } from 'src/stores/preferences'
 import { Button, CircleButton } from '../Elements'
+
 export const Header = () => {
   const { openAuthModal, user, isConnected, isConnecting } = useAuth()
 
   const [themeIcon, setThemeIcon] = useState(<BsMoonFill />)
-  const { theme, setTheme, setDNDDuration, isDNDModeActive } = useUserPreferences()
+  const { theme, setTheme, setDNDDuration, isDNDModeActive, layout, setLayout } = useUserPreferences()
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -54,6 +55,11 @@ export const Header = () => {
     setDNDDuration('never')
   }
 
+  const toggleLayout = () => {
+    const newLayout = layout === 'cards' ? 'grid' : 'cards'
+    setLayout(newLayout)
+  }
+
   return (
     <>
       <header className="AppHeader">
@@ -80,6 +86,9 @@ export const Header = () => {
             </Button>
           )}
 
+          <CircleButton onClick={toggleLayout}>
+            <MdGridView />
+          </CircleButton>
           <CircleButton onClick={onSettingsClick}>
             <BsFillGearFill />
           </CircleButton>

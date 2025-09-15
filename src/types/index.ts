@@ -79,16 +79,10 @@ export type GithubFeedItemData = FeedItem & {
   description?: string
 }
 
-export type AdFeedItemData = {
-  id: string
-  type: 'ad'
-}
+// Remove AdFeedItemData type
 
-export type FeedItemData =
-  | ArticleFeedItemData
-  | GithubFeedItemData
-  | ProductHuntFeedItemData
-  | AdFeedItemData
+export type FeedItemData = ArticleFeedItemData | GithubFeedItemData | ProductHuntFeedItemData
+// Remove AdFeedItemData from union type
 
 export type Repository = BaseEntry & {
   programmingLanguage: string
@@ -124,7 +118,6 @@ export type SupportedCardType = {
 
 export type CardPropsType = {
   meta: Omit<SupportedCardType, 'component'>
-  withAds: boolean
   knob?: React.ReactNode
   className?: string
 }
@@ -151,6 +144,7 @@ export type Option = {
   value: string
   icon?: React.ReactNode
   removeable?: boolean
+  isCustom?: boolean
 }
 
 export type DNDDuration =

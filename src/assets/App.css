@@ -110,6 +110,7 @@ a {
   padding-top: 20px;
   position: relative;
   scroll-snap-type: x mandatory;
+  scroll-behavior: smooth; /* Add smooth scrolling */
 }
 
 .HorizontalScroll {
@@ -1356,6 +1357,63 @@ Producthunt item
 
 .layoutLayers > * {
   scroll-snap-align: end;
+}
+
+/* Organize Mode Styles */
+.grid-layout {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.grid-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.organize-item {
+  height: auto;
+}
+
+.organize-item .blockHeader {
+  cursor: grab;
+}
+
+.organize-item .blockContent {
+  display: none;
+}
+
+.organize-mode-header {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 20px;
+  background-color: var(--card-header-background-color);
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
+
+.organize-mode-header h2 {
+  margin: 0 0 10px 0;
+}
+
+.organize-mode-header p {
+  margin: 0 0 15px 0;
+  color: var(--secondary-text-color);
+}
+
+.exit-organize-mode {
+  background-color: var(--button-background-color);
+  color: var(--button-text-color);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 20px;
+  cursor: pointer;
+}
+
+.exit-organize-mode:hover {
+  background-color: var(--button-hover-background-color);
 }
 
 /*Helpers */

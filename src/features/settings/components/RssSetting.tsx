@@ -47,13 +47,16 @@ export const RssSetting = () => {
         icon: info.icon,
       }
       setUserCustomCards([...userCustomCards, customCard])
-      const newCards = [
-        ...cards,
-        { id: cards.length, name: customCard.value, type: customCard.type },
-      ]
-      setCards(newCards)
+      // Add the new card while preserving existing card order
+      const existingCards = [...cards]
+      const newCard = {
+        id: Math.max(...existingCards.map((c) => c.id), existingCards.length - 1) + 1, // Use a new unique ID
+        name: customCard.value,
+        type: customCard.type,
+      }
+      setCards([...existingCards, newCard])
       //setSelectedCards(newCards)
-      identifyUserCards(newCards.map((card) => card.name))
+      identifyUserCards([...existingCards, newCard].map((card) => card.name))
       trackRssSourceAdd(customCard.value)
       setRssUrl('')
       setRssInputFeedback('RSS Feed Added')

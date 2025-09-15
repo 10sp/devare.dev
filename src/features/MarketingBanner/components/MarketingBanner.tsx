@@ -19,7 +19,7 @@ import { Campaign, MarketingConfig } from '../types'
 export const MarketingBanner = () => {
   const { setCampaignClosed, closedCampaigns } = useMarketingConfigStore()
   const { isConnected } = useAuth()
-  const { userSelectedTags, cards, firstSeenDate, advStatus } = useUserPreferences()
+  const { userSelectedTags, cards, firstSeenDate } = useUserPreferences()
   const [availableCampaigns, setAvailableCampaigns] = useState<Campaign[]>([])
   const { data: marketingConfig } = useGetMarketingConfig({
     config: {
@@ -39,11 +39,10 @@ export const MarketingBanner = () => {
       userTags: userSelectedTags.map((tag) => tag.label),
       cards: cards.map((card) => card.name),
       firstSeenDate,
-      adv: advStatus,
       isConnected,
       usageInDays: diffBetweenTwoDatesInDays(firstSeenDate, Date.now()),
     }
-  }, [userSelectedTags, firstSeenDate, cards, advStatus])
+  }, [userSelectedTags, firstSeenDate, cards])
 
   useEffect(() => {
     if (marketingConfig && marketingConfig.version === 1) {

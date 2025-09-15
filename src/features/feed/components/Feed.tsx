@@ -28,9 +28,6 @@ export const Feed = () => {
             const items = page.data
             const result: FeedItemData[] = []
             items.forEach((item, index) => {
-              if (pageIndex == 0 && index === 3) {
-                result.push({ type: 'ad', id: `ad-${pageIndex}-${index}` })
-              }
               result.push(item)
             })
 

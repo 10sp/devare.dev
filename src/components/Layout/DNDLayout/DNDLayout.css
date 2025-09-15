@@ -61,3 +61,18 @@
   max-width: 480px;
   width: 100%;
 }
+
+/* Organize Mode Styles */
+.organizeMode .blockHeader {
+  background-color: var(--card-header-background-color);
+  border-radius: 10px 10px 0 0;
+}
+
+.organizeMode .blockHeader:hover {
+  background: linear-gradient(90deg, var(--card-actions-background-shadow) 0%, transparent 34%);
+}
+
+.organizeMode .blockHeaderDragButton {
+  display: flex;
+  cursor: grab;
+}

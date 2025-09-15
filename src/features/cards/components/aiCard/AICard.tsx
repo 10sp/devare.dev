@@ -5,7 +5,7 @@ import { useUserPreferences } from 'src/stores/preferences'
 import { CardPropsType, FeedItemData } from 'src/types'
 
 export function AICard(props: CardPropsType) {
-  const { meta, withAds, knob } = props
+  const { meta, knob } = props
   const { userSelectedTags } = useUserPreferences()
   const {
     data: articles,

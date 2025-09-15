@@ -4,9 +4,9 @@
   "description": "Hackertab helps developers stay up-to-date with the latest dev trends and tools",
   "icons": [
     {
-      "src": "/logos/logoVector.svg",
+      "src": "/logos/hackertab-logo.svg",
       "type": "image/svg+xml",
-      "sizes": "1200x1200"
+      "sizes": "128x128"
     },
     {
       "src": "/logos/logo192.png",

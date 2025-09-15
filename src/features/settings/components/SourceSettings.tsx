@@ -1,11 +1,14 @@
-import { useMemo, useState } from 'react'
-import { ChipsSet, ConfirmModal } from 'src/components/Elements'
+import { useMemo, useRef, useState } from 'react'
+import { BiExport, BiImport } from 'react-icons/bi'
+import { Button, ChipsSet, ConfirmModal } from 'src/components/Elements'
 import { SettingsContentLayout } from 'src/components/Layout/SettingsContentLayout/SettingsContentLayout'
 import { SUPPORTED_CARDS } from 'src/config/supportedCards'
+import { RssFinderModal } from 'src/features/rssFinder'
 import { trackSourceAdd, trackSourceRemove } from 'src/lib/analytics'
 import { useUserPreferences } from 'src/stores/preferences'
 import { Option, SelectedCard } from 'src/types'
 import { RssSetting } from './RssSetting'
+import './sourceSettings.css'
 
 export const SourceSettings = () => {
   const { cards, setCards, userCustomCards, setUserCustomCards } = useUserPreferences()
@@ -16,6 +19,8 @@ export const SourceSettings = () => {
     showModal: false,
     option: undefined,
   })
+  const [showRssFinder, setShowRssFinder] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const mergedSources = useMemo(() => {
     return [
@@ -24,6 +29,8 @@ export const SourceSettings = () => {
           label: source.label,
           value: source.value,
           icon: source.icon,
+          // All sources can be removed now, not just custom ones
+          removeable: true,
         }
       }),
       ...userCustomCards.map((source) => {
@@ -37,15 +44,99 @@ export const SourceSettings = () => {
     ].sort((a, b) => (a.label > b.label ? 1 : -1))
   }, [userCustomCards])
 
+  // Export sources configuration
+  const handleExport = () => {
+    const exportData = {
+      cards: cards,
+      userCustomCards: userCustomCards,
+      exportDate: new Date().toISOString(),
+      version: '1.0',
+    }
+
+    const dataStr = JSON.stringify(exportData, null, 2)
+    const dataUri = `data:application/json;charset=utf-8,${encodeURIComponent(dataStr)}`
+
+    const exportFileDefaultName = `hackertab-sources-${new Date().toISOString().slice(0, 10)}.json`
+
+    const linkElement = document.createElement('a')
+    linkElement.setAttribute('href', dataUri)
+    linkElement.setAttribute('download', exportFileDefaultName)
+    linkElement.click()
+  }
+
+  // Import sources configuration
+  const handleImport = () => {
+    fileInputRef.current?.click()
+  }
+
+  // Handle file upload for import
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      try {
+        const content = e.target?.result as string
+        const importData = JSON.parse(content)
+
+        // Validate import data
+        if (!importData.cards || !importData.userCustomCards) {
+          throw new Error('Invalid file format')
+        }
+
+        // Set the imported data
+        setCards(importData.cards)
+        setUserCustomCards(importData.userCustomCards)
+
+        // Reset file input
+        if (fileInputRef.current) {
+          fileInputRef.current.value = ''
+        }
+
+        alert('Sources imported successfully!')
+      } catch (error) {
+        console.error('Error importing sources:', error)
+        alert('Error importing sources. Please check the file format.')
+      }
+    }
+    reader.readAsText(file)
+  }
+
   return (
     <SettingsContentLayout
       title="Sources"
       description={`Your feed will be tailored by following the sources you are interested in.`}>
       <>
+        <div className="sources-actions">
+          <Button startIcon={<BiImport />} onClick={handleImport}>
+            Import Sources
+          </Button>
+          <Button startIcon={<BiExport />} onClick={handleExport}>
+            Export Sources
+          </Button>
+          <Button onClick={() => setShowRssFinder(true)}>Find RSS Feeds</Button>
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileUpload}
+            accept=".json"
+            style={{ display: 'none' }}
+          />
+        </div>
+        <RssFinderModal isOpen={showRssFinder} onClose={() => setShowRssFinder(false)} />
         <ConfirmModal
           showModal={confirmDelete.showModal}
-          title={`Confirm delete source: ${confirmDelete.option?.label}`}
-          description={`Are you sure you want to delete ${confirmDelete.option?.label} source? This action cannot be undone.`}
+          title={`Confirm ${confirmDelete.option?.isCustom ? 'delete' : 'remove'} source: ${
+            confirmDelete.option?.label
+          }`}
+          description={`Are you sure you want to ${
+            confirmDelete.option?.isCustom ? 'delete' : 'remove'
+          } ${confirmDelete.option?.label} source? ${
+            confirmDelete.option?.isCustom
+              ? 'This action cannot be undone.'
+              : 'You can add it back anytime.'
+          }`}
           onClose={() =>
             setConfirmDelete({
               showModal: false,
@@ -57,12 +148,19 @@ export const SourceSettings = () => {
               return
             }
 
-            const newUserCards = userCustomCards.filter(
-              (card) => card.value !== confirmDelete.option?.value
-            )
-            const newCards = cards.filter((card) => card.name !== confirmDelete.option?.value)
-            setCards(newCards)
-            setUserCustomCards(newUserCards)
+            // If it's a custom source, remove it completely
+            if (confirmDelete.option.isCustom) {
+              const newUserCards = userCustomCards.filter(
+                (card) => card.value !== confirmDelete.option?.value
+              )
+              const newCards = cards.filter((card) => card.name !== confirmDelete.option?.value)
+              setCards(newCards)
+              setUserCustomCards(newUserCards)
+            } else {
+              // If it's a supported source, just remove it from the selected cards
+              const newCards = cards.filter((card) => card.name !== confirmDelete.option?.value)
+              setCards(newCards)
+            }
             setConfirmDelete({ showModal: false, option: undefined })
           }}
         />
@@ -71,22 +169,37 @@ export const SourceSettings = () => {
           options={mergedSources}
           defaultValues={cards.map((source) => source.name)}
           onRemove={(option) => {
-            setConfirmDelete({ showModal: true, option: option })
+            setConfirmDelete({
+              showModal: true,
+              option: {
+                ...option,
+                isCustom: userCustomCards.some((card) => card.value === option.value),
+              },
+            })
           }}
           onChange={(changes, selectedChips) => {
             const selectedValues = selectedChips.map((chip) => chip.value)
 
-            const cards = selectedValues
+            // Preserve existing card order and only add/remove cards as needed
+            const existingCardsMap = new Map(cards.map((card) => [card.name, card]))
+            const newSelectedValuesSet = new Set(selectedValues)
+
+            // Keep existing cards that are still selected
+            const keptCards = cards.filter((card) => newSelectedValuesSet.has(card.name))
+
+            // Add new cards that weren't previously selected
+            const newCardsToAdd = selectedValues
+              .filter((source) => !existingCardsMap.has(source))
               .map((source, index) => {
                 if (SUPPORTED_CARDS.find((sc) => sc.value === source)) {
                   return {
-                    id: index,
+                    id: cards.length + index, // Use a new ID that doesn't conflict
                     name: source,
                     type: 'supported',
                   }
                 } else if (userCustomCards.find((ucc) => ucc.value === source)) {
                   return {
-                    id: index,
+                    id: cards.length + index, // Use a new ID that doesn't conflict
                     name: source,
                     type: 'rss',
                   }
@@ -95,7 +208,9 @@ export const SourceSettings = () => {
               })
               .filter(Boolean) as SelectedCard[]
 
-            setCards(cards)
+            const updatedCards = [...keptCards, ...newCardsToAdd]
+
+            setCards(updatedCards)
 
             if (changes.action == 'ADD') {
               trackSourceAdd(changes.option.value)

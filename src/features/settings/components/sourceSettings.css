@@ -1,0 +1,43 @@
+.sources-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-bottom: 20px;
+}
+
+.sources-actions button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sources-actions button:first-child {
+  background-color: var(--card-background-color);
+  color: var(--primary-text-color);
+  border: 1px solid var(--tag-border-color);
+}
+
+.sources-actions button:first-child:hover {
+  background-color: var(--tag-background-color);
+}
+
+.sources-actions button:last-child {
+  background-color: #4f46e5;
+  color: white;
+  border: 1px solid #4f46e5;
+}
+
+.sources-actions button:last-child:hover {
+  background-color: #4338ca;
+}
+
+@media (max-width: 768px) {
+  .sources-actions {
+    justify-content: center;
+  }
+}

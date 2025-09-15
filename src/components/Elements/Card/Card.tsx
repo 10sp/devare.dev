@@ -1,9 +1,7 @@
 import clsx from 'clsx'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect } from 'react'
 import { BsBoxArrowInUpRight } from 'react-icons/bs'
 import { ref } from 'src/config'
-import { AdvBanner } from 'src/features/adv'
-import { useRemoteConfigStore } from 'src/features/remoteConfig'
 import { useUserPreferences } from 'src/stores/preferences'
 import { CardPropsType } from 'src/types'
 
@@ -17,36 +15,12 @@ export const Card = ({
   meta,
   titleComponent,
   className,
-  withAds = false,
   children,
   fullBlock = false,
   knob,
 }: RootCardProps) => {
-  const { openLinksNewTab } = useUserPreferences()
+  const { openLinksNewTab, isOrganizeMode, setIsOrganizeMode } = useUserPreferences()
   const { link, icon, label, badge } = meta
-  const [canAdsLoad, setCanAdsLoad] = useState(true)
-  const { adsConfig } = useRemoteConfigStore()
-
-  useEffect(() => {
-    if (!adsConfig.enabled || !withAds) {
-      return
-    }
-
-    const handleClassChange = () => {
-      if (document.documentElement.classList.contains('dndState')) {
-        setCanAdsLoad(false)
-      } else {
-        setCanAdsLoad(true)
-      }
-    }
-
-    const observer = new MutationObserver(handleClassChange)
-    observer.observe(document.documentElement, { attributes: true })
-
-    return () => {
-      observer.disconnect()
-    }
-  }, [withAds, adsConfig.enabled])
 
   const handleHeaderLinkClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault()
@@ -54,8 +28,37 @@ export const Card = ({
     window.open(url, openLinksNewTab ? '_blank' : '_self')
   }
 
+  // Handle double click on drag button to enter organize mode
+  const handleDoubleClick = (e: React.MouseEvent) => {
+    if ((e.target as HTMLElement).closest('.blockHeaderDragButton')) {
+      setIsOrganizeMode(true)
+      // Add class to document element for global styling
+      document.documentElement.classList.add('organizeMode')
+    }
+  }
+
+  // Add escape key listener
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOrganizeMode) {
+        setIsOrganizeMode(false)
+        document.documentElement.classList.remove('organizeMode')
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isOrganizeMode, setIsOrganizeMode])
+
   return (
-    <div className={clsx('block', fullBlock && 'fullBlock', className)}>
+    <div
+      className={clsx(
+        'block',
+        fullBlock && 'fullBlock',
+        className,
+        isOrganizeMode && 'organizeMode'
+      )}
+      onDoubleClick={handleDoubleClick}>
       <div className="blockHeader">
         {knob}
         <span className="blockHeaderIcon">{icon}</span> {titleComponent || label}{' '}
@@ -67,13 +70,7 @@ export const Card = ({
         {badge && <span className="blockHeaderBadge">{badge}</span>}
       </div>
 
-      {canAdsLoad && adsConfig.enabled && withAds && (
-        <div className="ad-wrapper blockRow">
-          <AdvBanner />
-        </div>
-      )}
-
-      <div className="blockContent scrollable">{children}</div>
+      {!isOrganizeMode && <div className="blockContent scrollable">{children}</div>}
     </div>
   )
 }

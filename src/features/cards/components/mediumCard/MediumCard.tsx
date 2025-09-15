@@ -9,7 +9,7 @@ import { useGetMediumArticles } from '../../api/getMediumArticles'
 import ArticleItem from './ArticleItem'
 
 export function MediumCard(props: CardPropsType) {
-  const { meta, withAds } = props
+  const { meta } = props
   const { userSelectedTags, cardsSettings, setCardSettings } = useUserPreferences()
   const selectedTag =
     [GLOBAL_TAG, MY_LANGUAGES_TAG, ...userSelectedTags].find(

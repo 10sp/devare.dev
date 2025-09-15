@@ -2,5 +2,9 @@
     "editor.formatOnSave": true,
     "editor.codeActionsOnSave": {
         "source.organizeImports": "explicit"
+    },
+    "npm.nodeVersion": "18.20.0",
+    "terminal.integrated.env.windows": {
+        "NODE_VERSION": "18.20.0"
     }
 }

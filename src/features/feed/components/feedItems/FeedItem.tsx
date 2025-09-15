@@ -1,5 +1,4 @@
 import { BaseItemPropsType, FeedItemData } from 'src/types'
-import { AdvFeedItem } from './AdvFeedItem'
 import { ArticleFeedItem } from './ArticleFeedItem'
 import { ProductFeedItem } from './ProductFeedItem'
 import { RepoFeedItem } from './RepoFeedItem'
@@ -19,9 +18,6 @@ export const FeedItem = (props: BaseItemPropsType<FeedItemData>) => {
     return <ArticleFeedItem {...props} item={item} />
   }
 
-  if (item.type === 'ad') {
-    return <AdvFeedItem {...props} item={item} />
-  }
-
+  // Remove ad type handling
   return null
 }

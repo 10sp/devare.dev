@@ -21,6 +21,7 @@ export const SettingsLayout = () => {
       name: 'AI Prompt Engines',
       path: '/settings/ai-engine',
     },
+    // Removed Import/Export link since we're integrating it into Sources
     {
       name: 'Settings',
       path: '/settings/general',
