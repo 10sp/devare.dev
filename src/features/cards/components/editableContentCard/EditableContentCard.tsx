@@ -89,7 +89,7 @@ export function EditableContentCard(props: CardPropsType) {
           </button>
         </div>
       )}
-      <ListComponent items={editableContent} renderItem={renderItem} />
+      <ListComponent items={editableContent} isLoading={false} renderItem={renderItem} />
     </Card>
   )
 }

@@ -70,6 +70,12 @@ type UserPreferencesStoreActions = {
   setDNDDuration: (duration: DNDDuration) => void
   // Add DND mode active function
   isDNDModeActive: () => boolean
+  // Add search engine actions
+  addSearchEngine: (engine: SearchEngineType) => void
+  removeSearchEngine: (engineName: string) => void
+  // Add onboarding actions
+  setOnboardingCompleted: (completed: boolean) => void
+  setFirstSeenDate: (date: number) => void
 }
 
 const defaultStorage: StateStorage = {
@@ -213,6 +219,18 @@ export const useUserPreferences = create(
         const state = get()
         return isDNDModeActive(state.DNDDuration)
       },
+      // Add search engine actions
+      addSearchEngine: (engine: SearchEngineType) =>
+        set((state) => ({
+          promptEngines: [...state.promptEngines, engine],
+        })),
+      removeSearchEngine: (engineName: string) =>
+        set((state) => ({
+          promptEngines: state.promptEngines.filter((engine) => engine.label !== engineName),
+        })),
+      // Add onboarding actions
+      setOnboardingCompleted: (completed: boolean) => set({ onboardingCompleted: completed }),
+      setFirstSeenDate: (date: number) => set({ firstSeenDate: date }),
     }),
     {
       name: 'user-preferences',

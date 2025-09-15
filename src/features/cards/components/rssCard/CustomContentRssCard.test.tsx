@@ -29,6 +29,10 @@ describe('CustomContentRssCard', () => {
         url: 'https://example.com/1',
         published_at: Date.now(),
         tags: ['test'],
+        reactions: 0,
+        comments: 0,
+        image_url: '',
+        source: 'custom',
       },
       {
         id: '2',
@@ -36,6 +40,10 @@ describe('CustomContentRssCard', () => {
         url: 'https://example.com/2',
         published_at: Date.now(),
         tags: ['test'],
+        reactions: 0,
+        comments: 0,
+        image_url: '',
+        source: 'custom',
       },
     ],
   }
