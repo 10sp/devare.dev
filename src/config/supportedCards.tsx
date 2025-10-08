@@ -22,6 +22,14 @@ const { RedditCard } = lazyImport(() => import('src/features/cards'), 'RedditCar
 
 export const SUPPORTED_CARDS: SupportedCardType[] = [
   {
+    value: 'editable-content',
+    icon: <HiSparkles color="#4F46E5" />,
+    analyticsTag: 'editable-content',
+    label: 'Todo List',
+    component: EditableContentCard,
+    type: 'supported',
+  },
+  {
     value: 'github',
     analyticsTag: 'github',
     label: 'Github repositories',
@@ -119,13 +127,5 @@ export const SUPPORTED_CARDS: SupportedCardType[] = [
     component: AICard,
     type: 'supported',
     badge: 'BETA',
-  },
-  {
-    value: 'editable-content',
-    icon: <HiSparkles color="#4F46E5" />,
-    analyticsTag: 'editable-content',
-    label: 'Editable Content',
-    component: EditableContentCard,
-    type: 'supported',
   },
 ]

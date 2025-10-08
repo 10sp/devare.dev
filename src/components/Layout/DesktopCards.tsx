@@ -68,7 +68,7 @@ export const DesktopCards = ({
   userCustomCards: SupportedCardType[]
 }) => {
   const AVAILABLE_CARDS = [...SUPPORTED_CARDS, ...userCustomCards]
-  const { updateCardOrder, isOrganizeMode, setIsOrganizeMode } = useUserPreferences()
+  const { updateCardOrder, isOrganizeMode, setIsOrganizeMode, setCards } = useUserPreferences()
   const cardsWrapperRef = useRef<HTMLDivElement>(null)
   const { adsConfig } = useRemoteConfigStore()
 
@@ -87,17 +87,15 @@ export const DesktopCards = ({
     const { active, over } = event
 
     if (active.id !== over?.id) {
-      const previousCard = cards.find((card) => card.name === active.id)
-      const newCard = cards.find((card) => card.name === over?.id)
-      if (!previousCard || !newCard) {
-        return
+      // Find the indices of the dragged items in the cards array
+      const oldIndex = cards.findIndex((card) => card.name === active.id)
+      const newIndex = cards.findIndex((card) => card.name === over?.id)
+
+      if (oldIndex !== -1 && newIndex !== -1) {
+        // Update the card order using the store action
+        updateCardOrder(oldIndex, newIndex)
+        trackPageDrag()
       }
-
-      const oldIndex = previousCard.id
-      const newIndex = newCard.id
-
-      updateCardOrder(oldIndex, newIndex)
-      trackPageDrag()
     }
 
     cardsWrapperRef.current?.classList.remove('snapDisabled')
@@ -140,7 +138,7 @@ export const DesktopCards = ({
 
         return {
           card: constantCard,
-          id: card.name,
+          id: card.name, // Use card name as ID instead of card.id
         }
       })
       .filter(Boolean) as { id: string; card: SupportedCardType }[]

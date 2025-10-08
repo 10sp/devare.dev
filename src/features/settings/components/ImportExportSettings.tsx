@@ -31,6 +31,7 @@ export const ImportExportSettings = () => {
     setDNDDuration,
     addSearchEngine,
     removeSearchEngine,
+    updateEditableContent,
   } = useUserPreferences()
 
   const [importStatus, setImportStatus] = useState<string | null>(null)
@@ -40,6 +41,14 @@ export const ImportExportSettings = () => {
   // Export all settings to a JSON file
   const handleExport = () => {
     try {
+      // Extract editable content (todo lists) from userCustomCards
+      const editableContentData = userCustomCards
+        .filter((card) => card.editableContent)
+        .map((card) => ({
+          cardValue: card.value,
+          content: card.editableContent,
+        }))
+
       const exportData = {
         // General settings
         layout,
@@ -62,6 +71,9 @@ export const ImportExportSettings = () => {
 
         // Card settings
         cardsSettings,
+
+        // Todo list data
+        editableContent: editableContentData,
       }
 
       const dataStr = JSON.stringify(exportData, null, 2)
@@ -130,6 +142,13 @@ export const ImportExportSettings = () => {
 
         // Set prompt engine after importing engines
         if (importedData.promptEngine) setPromptEngine(importedData.promptEngine)
+
+        // Import todo list data
+        if (importedData.editableContent) {
+          importedData.editableContent.forEach((item: { cardValue: string; content: any[] }) => {
+            updateEditableContent(item.cardValue, item.content)
+          })
+        }
 
         setImportStatus('Settings imported successfully!')
         setTimeout(() => setImportStatus(null), 3000)

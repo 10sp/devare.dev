@@ -1,10 +1,18 @@
 {
-    "editor.formatOnSave": true,
-    "editor.codeActionsOnSave": {
-        "source.organizeImports": "explicit"
-    },
-    "npm.nodeVersion": "18.20.0",
-    "terminal.integrated.env.windows": {
-        "NODE_VERSION": "18.20.0"
-    }
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": "explicit"
+  },
+  "npm.nodeVersion": "18.20.0",
+  "terminal.integrated.env.windows": {
+    "NODE_VERSION": "18.20.0"
+  },
+  "files.watcherExclude": {
+    "**/.git/objects/**": true,
+    "**/.git/subtree-cache/**": true,
+    "**/.hg/store/**": true,
+    "**/.git/**": true,
+    "**/node_modules/**": true,
+    "**/.vscode/**": true
+  }
 }

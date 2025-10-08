@@ -127,6 +127,28 @@ export type EditableContent = {
   url?: string
   tags?: string[]
   published_at?: number
+  // Add completed field for todo items
+  completed?: boolean
+  // Add reminder fields
+  reminderEnabled?: boolean
+  reminderTime?: number // timestamp
+  // Add image support
+  isImage?: boolean
+  // Add Notion block properties
+  type?:
+    | 'to_do'
+    | 'heading1'
+    | 'heading2'
+    | 'heading3'
+    | 'bulleted_list'
+    | 'numbered_list'
+    | 'quote'
+    | 'divider'
+    | 'paragraph'
+  properties?: {
+    checked?: boolean
+    level?: number
+  }
 }
 
 export type CardPropsType = {
