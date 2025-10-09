@@ -17,12 +17,40 @@ type BlockType =
   | 'quote'
   | 'divider'
   | 'paragraph'
+  | 'toggle'
+  | 'callout'
+  | 'code'
+  | 'image'
+  | 'video'
+  | 'audio'
+  | 'file'
+  | 'gallery'
 
-interface NotionBlock extends EditableContent {
+// Create a new interface that includes all the properties we need
+interface NotionBlock {
+  id: string
+  title: string
+  description: string
+  url?: string
+  tags?: string[]
+  published_at?: number
+  completed?: boolean
+  reminderEnabled?: boolean
+  reminderTime?: number
+  isImage?: boolean
   type: BlockType
   properties?: {
     checked?: boolean
     level?: number
+    language?: string
+    emoji?: string
+    isOpen?: boolean
+    // Media properties
+    mediaUrl?: string
+    caption?: string
+    filename?: string
+    images?: string[]
+    layout?: 'grid' | 'carousel'
   }
 }
 
@@ -46,23 +74,26 @@ export function EditableContentCard(props: CardPropsType) {
     if (customCard?.editableContent) {
       return customCard.editableContent.map((item) => ({
         ...item,
-        type: (item.type as BlockType) || 'to_do',
+        type: (item.type as BlockType) || 'paragraph',
+        // Ensure completed property is properly set for todo items
+        completed: item.type === 'to_do' ? (item.completed || false) : item.completed,
       })) as NotionBlock[]
     }
     // Fallback to meta.editableContent or empty array
     return meta.editableContent
       ? (meta.editableContent.map((item) => ({
           ...item,
-          type: (item.type as BlockType) || 'to_do',
+          type: (item.type as BlockType) || 'paragraph',
+          // Ensure completed property is properly set for todo items
+          completed: item.type === 'to_do' ? (item.completed || false) : item.completed,
         })) as NotionBlock[])
       : []
   })
   const inputRef = useRef<HTMLInputElement>(null)
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
-  const [isUsingTextarea, setIsUsingTextarea] = useState(false)
-  const [viewingMedia, setViewingMedia] = useState<{ url: string; type: 'image' | 'video' } | null>(
-    null
-  )
+  const [viewingMedia, setViewingMedia] = useState<{
+    url: string
+    type: 'image' | 'video' | 'audio'
+  } | null>(null)
   const [activeSlashMenu, setActiveSlashMenu] = useState<{
     index: number
     position: { x: number; y: number }
@@ -71,6 +102,12 @@ export function EditableContentCard(props: CardPropsType) {
 
   // Block type definitions with icons and descriptions
   const BLOCK_TYPES = [
+    {
+      type: 'paragraph',
+      name: 'Text',
+      icon: 'T',
+      description: 'Just start writing with plain text.',
+    },
     { type: 'to_do', name: 'To-do list', icon: '✓', description: 'Track tasks with a to-do list.' },
     { type: 'heading1', name: 'Heading 1', icon: 'H1', description: 'Big section heading.' },
     { type: 'heading2', name: 'Heading 2', icon: 'H2', description: 'Medium section heading.' },
@@ -87,13 +124,25 @@ export function EditableContentCard(props: CardPropsType) {
       icon: '1.',
       description: 'Create a list with numbering.',
     },
+    {
+      type: 'toggle',
+      name: 'Toggle list',
+      icon: '▶',
+      description: 'Toggles can hide and show content inside.',
+    },
     { type: 'quote', name: 'Quote', icon: '❝', description: 'Capture a quote.' },
     { type: 'divider', name: 'Divider', icon: '—', description: 'Visually divide blocks.' },
+    { type: 'callout', name: 'Callout', icon: '💡', description: 'Make writing stand out.' },
+    { type: 'code', name: 'Code', icon: '</>', description: 'Capture a code snippet.' },
+    { type: 'image', name: 'Image', icon: '🖼️', description: 'Insert and view images.' },
+    { type: 'video', name: 'Video', icon: '🎬', description: 'Embed video or upload.' },
+    { type: 'audio', name: 'Audio', icon: '🎧', description: 'Attach an audio file.' },
+    { type: 'file', name: 'File', icon: '📎', description: 'Attach files for download.' },
     {
-      type: 'paragraph',
-      name: 'Text',
-      icon: 'T',
-      description: 'Just start writing with plain text.',
+      type: 'gallery',
+      name: 'Gallery',
+      icon: '🖼️🖼️',
+      description: 'Show multiple images in a grid.',
     },
   ]
 
@@ -109,14 +158,12 @@ export function EditableContentCard(props: CardPropsType) {
 
   // Focus the input when the component mounts
   useEffect(() => {
-    if (!isUsingTextarea && inputRef.current) {
+    if (inputRef.current) {
       inputRef.current.focus()
-    } else if (isUsingTextarea && textareaRef.current) {
-      textareaRef.current.focus()
     }
-  }, [isUsingTextarea])
+  }, [])
 
-  // Reminder check effect - improved to check every 10 seconds for better accuracy
+  // Reminder check effect - improved to check every minute for better accuracy
   useEffect(() => {
     const checkReminders = () => {
       const now = Date.now()
@@ -145,76 +192,11 @@ export function EditableContentCard(props: CardPropsType) {
     // Check immediately on mount
     checkReminders()
 
-    // Then check every 10 seconds
-    const interval = setInterval(checkReminders, 10000)
+    // Then check every minute
+    const interval = setInterval(checkReminders, 60000)
 
     return () => clearInterval(interval)
   }, [editableContent])
-
-  // Handle paste events for media and rich content
-  const handlePaste = async (e: React.ClipboardEvent) => {
-    e.preventDefault()
-
-    // Get plain text
-    const text = e.clipboardData.getData('text/plain')
-
-    // Check for files (images, etc.)
-    const items = e.clipboardData.items
-    for (let i = 0; i < items.length; i++) {
-      const item = items[i]
-
-      // Handle images
-      if (item.type.indexOf('image') !== -1) {
-        const blob = item.getAsFile()
-        if (blob) {
-          // Create a data URL for the image
-          const reader = new FileReader()
-          reader.onload = (event) => {
-            if (event.target?.result) {
-              const imageDataUrl = event.target.result as string
-
-              // If there's text, use it as title, otherwise use "Image"
-              const title = text.trim() || 'Image'
-
-              // Add the image as a new todo item with description
-              const newContent: NotionBlock = {
-                id: `content-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-                title: title,
-                description: imageDataUrl,
-                completed: false,
-                reminderEnabled: false,
-                reminderTime: undefined,
-                isImage: true,
-                type: 'to_do',
-              }
-              const updatedContent = [...editableContent, newContent]
-              setEditableContent(updatedContent)
-              updateEditableContent(meta.value, updatedContent)
-            }
-          }
-          reader.readAsDataURL(blob)
-        }
-        return
-      }
-    }
-
-    // Handle plain text
-    if (text) {
-      // If we're in the add todo input, add as new todo
-      if (e.target === inputRef.current || e.target === textareaRef.current) {
-        handleAddContent(text)
-      }
-      // If we're in an edit field, insert text at cursor position
-      else {
-        const target = e.target as HTMLInputElement | HTMLTextAreaElement
-        const start = target.selectionStart || 0
-        const end = target.selectionEnd || 0
-        const newValue = target.value.substring(0, start) + text + target.value.substring(end)
-        target.value = newValue
-        target.selectionStart = target.selectionEnd = start + text.length
-      }
-    }
-  }
 
   const handleAddContent = (title: string = '') => {
     const trimmedTitle = title.trim()
@@ -223,23 +205,19 @@ export function EditableContentCard(props: CardPropsType) {
         id: `content-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         title: trimmedTitle,
         description: '',
-        completed: false,
+        completed: false, // Explicitly set completed to false
         reminderEnabled: false,
         reminderTime: undefined,
-        type: 'to_do',
+        type: 'paragraph',
       }
       const updatedContent = [...editableContent, newContent]
       setEditableContent(updatedContent)
-      updateEditableContent(meta.value, updatedContent)
+      updateEditableContent(meta.value, updatedContent as EditableContent[])
 
       // Reset input
       if (inputRef.current) {
         inputRef.current.value = ''
       }
-      if (textareaRef.current) {
-        textareaRef.current.value = ''
-      }
-      setIsUsingTextarea(false)
     }
   }
 
@@ -248,7 +226,7 @@ export function EditableContentCard(props: CardPropsType) {
       content.id === id ? { ...content, ...updatedContent } : content
     )
     setEditableContent(updated)
-    updateEditableContent(meta.value, updated)
+    updateEditableContent(meta.value, updated as EditableContent[])
   }
 
   const handleToggleComplete = (id: string, completed: boolean) => {
@@ -258,105 +236,25 @@ export function EditableContentCard(props: CardPropsType) {
   const handleDeleteContent = (id: string) => {
     const updated = editableContent.filter((content) => content.id !== id)
     setEditableContent(updated)
-    updateEditableContent(meta.value, updated)
+    updateEditableContent(meta.value, updated as EditableContent[])
   }
 
-  const handleAddTodoOnKeyDown = (
-    e: KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>,
-    index?: number
-  ) => {
-    // Ctrl+Enter or Cmd+Enter for new line
-    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-      if (isUsingTextarea) {
-        // Insert newline in textarea
-        const target = e.target as HTMLTextAreaElement
-        const start = target.selectionStart
-        const end = target.selectionEnd
-        const text = target.value
-        target.value = text.substring(0, start) + '\n' + text.substring(end)
-        target.selectionStart = target.selectionEnd = start + 1
-      } else {
-        // Switch to textarea mode
-        const inputValue = (e.target as HTMLInputElement).value
-        setIsUsingTextarea(true)
-        // Wait for next tick to set textarea value
-        setTimeout(() => {
-          if (textareaRef.current) {
-            textareaRef.current.value = inputValue
-            textareaRef.current.focus()
-          }
-        }, 0)
+  const handleAddTodoOnKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      const target = e.target as HTMLInputElement
+      if (target.value.trim()) {
+        handleAddContent(target.value.trim())
       }
       e.preventDefault()
-      return
     }
 
-    // Enter (without Ctrl/Cmd) to add todo or create new block
-    if (e.key === 'Enter' && !e.shiftKey) {
-      if (typeof index === 'number') {
-        // We're in a Notion block
-        e.preventDefault()
-        addBlock(index)
-      } else {
-        // We're in the add todo input
-        const target = e.target as HTMLInputElement | HTMLTextAreaElement
-        if (target.value.trim()) {
-          handleAddContent(target.value.trim())
-        }
-        e.preventDefault()
-      }
-    }
-
-    // Backspace on empty input to delete block
-    if (e.key === 'Backspace' && typeof index === 'number') {
-      const target = e.target as HTMLInputElement | HTMLTextAreaElement
-      if (target.value === '') {
-        e.preventDefault()
-        if (editableContent.length > 1) {
-          deleteBlock(editableContent[index].id)
-          // Focus the previous block
-          setTimeout(() => {
-            if (inputRefs.current[index - 1]) {
-              inputRefs.current[index - 1]?.focus()
-            }
-          }, 10)
-        }
-      }
-    }
-
-    // Slash command to open menu
-    if (e.key === '/' && typeof index === 'number') {
-      const target = e.target as HTMLInputElement | HTMLTextAreaElement
-      if (target.value === '') {
-        e.preventDefault()
-        const rect = target.getBoundingClientRect()
-        setActiveSlashMenu({
-          index,
-          position: { x: rect.left, y: rect.bottom },
-        })
-      }
-    }
-
-    // Escape to clear
     if (e.key === 'Escape') {
       if (inputRef.current) {
         inputRef.current.value = ''
         inputRef.current.focus()
       }
-      if (textareaRef.current) {
-        textareaRef.current.value = ''
-      }
-      setIsUsingTextarea(false)
       e.preventDefault()
     }
-  }
-
-  const handleTextareaBlur = (e: React.FocusEvent<HTMLTextAreaElement>) => {
-    const value = e.target.value.trim()
-    if (value) {
-      handleAddContent(value)
-    }
-    setIsUsingTextarea(false)
   }
 
   const handleSetReminder = (id: string, minutes: number) => {
@@ -367,11 +265,39 @@ export function EditableContentCard(props: CardPropsType) {
     })
   }
 
+  // Handle media upload
+  const handleMediaUpload = (id: string, file: File) => {
+    // In a real implementation, you would upload the file to a server
+    // For now, we'll create a local object URL
+    const url = URL.createObjectURL(file)
+    handleUpdateContent(id, {
+      properties: {
+        ...(editableContent.find((item) => item.id === id)?.properties || {}),
+        mediaUrl: url,
+        filename: file.name,
+      },
+    })
+  }
+
+  // Handle paste event for media
+  const handlePaste = (e: React.ClipboardEvent, id: string) => {
+    const items = e.clipboardData.items
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf('image') !== -1) {
+        const blob = items[i].getAsFile()
+        if (blob) {
+          handleMediaUpload(id, blob)
+          break
+        }
+      }
+    }
+  }
+
   // Drag and drop handlers
-  const handleDragStart = (e: React.DragEvent, item: EditableContent) => {
-    setDraggedItem(item as NotionBlock)
+  const handleDragStart = (e: React.DragEvent, item: NotionBlock) => {
+    setDraggedItem(item)
     e.dataTransfer.effectAllowed = 'move'
-    e.dataTransfer.setData('text/html', e.currentTarget.innerHTML)
+    e.dataTransfer.setData('text/plain', item.id)
   }
 
   const handleDragOver = (e: React.DragEvent, index: number) => {
@@ -386,6 +312,7 @@ export function EditableContentCard(props: CardPropsType) {
 
   const handleDrop = (e: React.DragEvent, dropIndex: number) => {
     e.preventDefault()
+    e.stopPropagation()
 
     if (draggedItem) {
       const draggedIndex = editableContent.findIndex((item) => item.id === draggedItem.id)
@@ -395,7 +322,7 @@ export function EditableContentCard(props: CardPropsType) {
         const [removed] = newContent.splice(draggedIndex, 1)
         newContent.splice(dropIndex, 0, removed)
         setEditableContent(newContent)
-        updateEditableContent(meta.value, newContent)
+        updateEditableContent(meta.value, newContent as EditableContent[])
       }
     }
 
@@ -408,7 +335,7 @@ export function EditableContentCard(props: CardPropsType) {
     setDragOverIndex(null)
   }
 
-  const renderItem = (item: EditableContent, index: number) => (
+  const renderItem = (item: NotionBlock, index: number) => (
     <EditableContentItem
       key={item.id}
       item={item}
@@ -424,6 +351,8 @@ export function EditableContentCard(props: CardPropsType) {
       onDragEnd={handleDragEnd}
       isDraggedOver={dragOverIndex === index}
       onViewMedia={setViewingMedia}
+      onMediaUpload={handleMediaUpload}
+      onPaste={handlePaste}
       addBlock={addBlock}
       deleteBlock={deleteBlock}
       setActiveSlashMenu={setActiveSlashMenu}
@@ -433,41 +362,53 @@ export function EditableContentCard(props: CardPropsType) {
   )
 
   const HeaderTitle = () => {
+    const todoItems = editableContent.filter((item) => item.type === 'to_do')
+    const completedTasks = todoItems.filter((item) => item.completed).length
+    const incompleteTasks = todoItems.filter((item) => !item.completed).length
+
     return (
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          width: '100%',
-        }}>
+      <div className="blockHeader">
         <span>{meta.label}</span>
-        {editableContent.length > 0 && (
-          <span style={{ fontSize: '14px', opacity: 0.7 }}>
-            {editableContent.filter((item) => !item.completed).length} / {editableContent.length}
-          </span>
+        {todoItems.length > 0 && (
+          <div className="task-count-indicator">
+            {/* Incomplete tasks indicator - red circle */}
+            <div className="incomplete-tasks-indicator">{incompleteTasks}</div>
+            {/* Completed tasks indicator - green circle */}
+            <div className="completed-tasks-indicator">{completedTasks}</div>
+          </div>
         )}
       </div>
     )
   }
 
   // Add a new block
-  const addBlock = (index: number, type: BlockType = 'to_do') => {
+  const addBlock = (index: number, type: BlockType = 'paragraph') => {
     const newBlock: NotionBlock = {
       id: `block-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       type,
       title: '',
       description: '',
-      completed: false,
+      completed: type === 'to_do' ? false : undefined, // Only set for todo items
       reminderEnabled: false,
       reminderTime: undefined,
-      properties: type === 'to_do' ? { checked: false } : undefined,
+      properties:
+        type === 'callout'
+          ? { emoji: '💡' }
+          : type === 'toggle'
+          ? { isOpen: false }
+          : type === 'code'
+          ? { language: 'javascript' }
+          : type === 'gallery'
+          ? { images: [], layout: 'grid' }
+          : type === 'image' || type === 'video' || type === 'audio' || type === 'file'
+          ? { mediaUrl: undefined, caption: '' }
+          : undefined,
     }
 
     const newContent = [...editableContent]
     newContent.splice(index + 1, 0, newBlock)
     setEditableContent(newContent)
-    updateEditableContent(meta.value, newContent)
+    updateEditableContent(meta.value, newContent as EditableContent[])
 
     // Focus the new block after a short delay
     setTimeout(() => {
@@ -477,47 +418,112 @@ export function EditableContentCard(props: CardPropsType) {
     }, 10)
   }
 
-  // Update a block
-  const updateBlock = (id: string, updates: Partial<NotionBlock>) => {
-    const updated = editableContent.map((block) =>
-      block.id === id ? { ...block, ...updates } : block
-    ) as NotionBlock[]
-    setEditableContent(updated)
-    updateEditableContent(meta.value, updated)
-  }
-
   // Delete a block
   const deleteBlock = (id: string) => {
-    const updated = editableContent.filter((block) => block.id !== id) as NotionBlock[]
+    const updated = editableContent.filter((block) => block.id !== id)
     setEditableContent(updated)
-    updateEditableContent(meta.value, updated)
+    updateEditableContent(meta.value, updated as EditableContent[])
   }
 
   // Handle slash command selection
   const handleSlashCommand = (index: number, type: BlockType) => {
-    updateBlock(editableContent[index].id, { type })
-    setActiveSlashMenu(null)
-
-    // Focus the block after type change
-    setTimeout(() => {
-      if (inputRefs.current[index]) {
-        inputRefs.current[index]?.focus()
+    if (index === -1) {
+      // Special case: Adding a new block via the main input
+      const newBlock: NotionBlock = {
+        id: `block-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        type,
+        title: '',
+        description: '',
+        completed: type === 'to_do' ? false : undefined, // Only set for todo items
+        reminderEnabled: false,
+        reminderTime: undefined,
+        properties:
+          type === 'callout'
+            ? { emoji: '💡' }
+            : type === 'toggle'
+            ? { isOpen: false }
+            : type === 'code'
+            ? { language: 'javascript' }
+            : type === 'gallery'
+            ? { images: [], layout: 'grid' }
+            : type === 'image' || type === 'video' || type === 'audio' || type === 'file'
+            ? { mediaUrl: undefined, caption: '' }
+            : undefined,
       }
-    }, 10)
+      
+      const updatedContent = [...editableContent, newBlock]
+      setEditableContent(updatedContent)
+      updateEditableContent(meta.value, updatedContent as EditableContent[])
+      
+      // Focus the new block
+      setTimeout(() => {
+        if (inputRefs.current[updatedContent.length - 1]) {
+          inputRefs.current[updatedContent.length - 1]?.focus()
+        }
+      }, 10)
+    } else {
+      // Regular case: Changing type of existing block
+      handleUpdateContent(editableContent[index].id, { type })
+      
+      // Focus the block after type change
+      setTimeout(() => {
+        if (inputRefs.current[index]) {
+          inputRefs.current[index]?.focus()
+        }
+      }, 10)
+    }
+    
+    setActiveSlashMenu(null)
   }
 
   // Render slash command menu
   const renderSlashMenu = () => {
     if (!activeSlashMenu) return null
 
+    // Calculate position to ensure menu stays within viewport
+    const calculatePosition = () => {
+      if (!activeSlashMenu) return { x: 0, y: 0 }
+
+      const { x, y } = activeSlashMenu.position
+      const menuWidth = 280
+      const menuHeight = 400
+      const viewportWidth = window.innerWidth
+      const viewportHeight = window.innerHeight
+
+      let adjustedX = Math.max(10, x)
+      let adjustedY = y
+
+      // Adjust if menu would go off right edge
+      if (x + menuWidth > viewportWidth) {
+        adjustedX = viewportWidth - menuWidth - 10
+      }
+
+      // Adjust if menu would go off bottom edge
+      if (y + menuHeight > viewportHeight) {
+        // Position above the input if not enough space below
+        adjustedY = y - menuHeight - 10
+      }
+
+      // Ensure menu doesn't go above viewport
+      adjustedY = Math.max(10, adjustedY)
+
+      return { x: adjustedX, y: adjustedY }
+    }
+
+    const position = calculatePosition()
+
     return (
       <div
         className="slash-menu"
         style={{
           position: 'fixed',
-          left: activeSlashMenu.position.x,
-          top: activeSlashMenu.position.y,
-        }}>
+          left: position.x,
+          top: position.y,
+        }}
+        onClick={(e) => e.stopPropagation()}>
+        <div style={{ fontSize: '11px', color: '#888', padding: '8px 12px', fontWeight: 600 }}>
+          BASIC BLOCKS
+        </div>
         {BLOCK_TYPES.map((blockType) => (
           <div
             key={blockType.type}
@@ -532,33 +538,37 @@ export function EditableContentCard(props: CardPropsType) {
     )
   }
 
+  // Close slash menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => {
+      if (activeSlashMenu) {
+        setActiveSlashMenu(null)
+      }
+    }
+
+    document.addEventListener('click', handleClickOutside)
+    return () => document.removeEventListener('click', handleClickOutside)
+  }, [activeSlashMenu])
+
   return (
     <>
       <Card titleComponent={<HeaderTitle />} {...props}>
-        {isUsingTextarea ? (
-          <textarea
-            ref={textareaRef}
-            placeholder="+ Add a todo (Press Enter to save, Ctrl+Enter for new line)"
-            className="add-todo-textarea"
-            onKeyDown={handleAddTodoOnKeyDown}
-            onBlur={handleTextareaBlur}
-            onPaste={handlePaste}
-            autoFocus
-          />
-        ) : (
-          <input
-            ref={inputRef}
-            type="text"
-            placeholder="+ Add a todo (Press Enter to save, Ctrl+Enter for multiline)"
-            className="add-todo-input"
-            onKeyDown={handleAddTodoOnKeyDown}
-            onPaste={handlePaste}
-          />
-        )}
+        <input
+          ref={inputRef}
+          type="text"
+          placeholder="Type '/' for commands, or just start typing..."
+          className="add-todo-input"
+          onFocus={(e) => e.target.classList.add('focused')}
+          onBlur={(e) => e.target.classList.remove('focused')}
+          onKeyDown={handleAddTodoOnKeyDown}
+        />
         {editableContent.length === 0 ? (
           <div className="empty-state">
             <div className="empty-state-icon">📝</div>
-            <div className="empty-state-text">No todos yet. Add one above to get started!</div>
+            <div className="empty-state-text">Start writing</div>
+            <div className="empty-state-subtext">
+              Type <code className="empty-state-code">/</code> to see all block types
+            </div>
           </div>
         ) : (
           <ListComponent items={editableContent} isLoading={false} renderItem={renderItem} />
@@ -570,14 +580,18 @@ export function EditableContentCard(props: CardPropsType) {
         onClose={() => setNotification({ isVisible: false, message: '' })}
       />
 
+      {renderSlashMenu()}
+
       {/* Media viewer modal */}
       {viewingMedia && (
         <div className="media-viewer-overlay" onClick={() => setViewingMedia(null)}>
           <div className="media-viewer-content" onClick={(e) => e.stopPropagation()}>
             {viewingMedia.type === 'image' ? (
               <img src={viewingMedia.url} alt="Full size view" className="media-viewer-image" />
-            ) : (
+            ) : viewingMedia.type === 'video' ? (
               <video src={viewingMedia.url} controls className="media-viewer-video" />
+            ) : (
+              <audio src={viewingMedia.url} controls className="media-viewer-audio" />
             )}
             <button className="media-viewer-close" onClick={() => setViewingMedia(null)}>
               Close
@@ -590,24 +604,26 @@ export function EditableContentCard(props: CardPropsType) {
 }
 
 type EditableContentItemProps = {
-  item: EditableContent
+  item: NotionBlock
   index: number
-  onUpdate: (id: string, updatedContent: Partial<EditableContent>) => void
+  onUpdate: (id: string, updatedContent: Partial<NotionBlock>) => void
   onToggleComplete: (id: string, completed: boolean) => void
   onDelete: (id: string) => void
   onSetReminder: (id: string, minutes: number) => void
-  onDragStart: (e: React.DragEvent, item: EditableContent) => void
+  onDragStart: (e: React.DragEvent, item: NotionBlock) => void
   onDragOver: (e: React.DragEvent, index: number) => void
   onDragLeave: () => void
   onDrop: (e: React.DragEvent, index: number) => void
   onDragEnd: () => void
   isDraggedOver: boolean
-  onViewMedia: (media: { url: string; type: 'image' | 'video' }) => void
+  onViewMedia: (media: { url: string; type: 'image' | 'video' | 'audio' }) => void
+  onMediaUpload: (id: string, file: File) => void
+  onPaste: (e: React.ClipboardEvent, id: string) => void
   addBlock: (index: number, type?: BlockType) => void
   deleteBlock: (id: string) => void
   setActiveSlashMenu: (menu: { index: number; position: { x: number; y: number } } | null) => void
   inputRefs: React.RefObject<(HTMLInputElement | HTMLTextAreaElement | null)[]>
-  items: EditableContent[]
+  items: NotionBlock[]
 }
 
 const EditableContentItem = ({
@@ -624,287 +640,88 @@ const EditableContentItem = ({
   onDragEnd,
   isDraggedOver,
   onViewMedia,
+  onMediaUpload,
+  onPaste,
   addBlock,
   deleteBlock,
   setActiveSlashMenu,
   inputRefs,
   items,
 }: EditableContentItemProps) => {
-  const [isEditingTitle, setIsEditingTitle] = useState(false)
-  const [tempTitle, setTempTitle] = useState(item.title)
-  const titleInputRef = useRef<HTMLInputElement>(null)
-  const titleTextareaRef = useRef<HTMLTextAreaElement>(null)
-  const [isUsingTextarea, setIsUsingTextarea] = useState(item.title.includes('\n'))
+  const [showActions, setShowActions] = useState(false)
   const [showReminderOptions, setShowReminderOptions] = useState(false)
-  const [showCustomTimer, setShowCustomTimer] = useState(false)
-  const [customMinutes, setCustomMinutes] = useState(10)
-  const [isEditingDescription, setIsEditingDescription] = useState(false)
-  const [tempDescription, setTempDescription] = useState(item.description || '')
+  // Create a separate ref for each media block
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // Handle paste events for editing
-  const handlePaste = async (e: React.ClipboardEvent) => {
-    e.preventDefault()
-
-    // Get plain text
-    const text = e.clipboardData.getData('text/plain')
-
-    // Check for files (images, etc.)
-    const items = e.clipboardData.items
-    for (let i = 0; i < items.length; i++) {
-      const itemClipboard = items[i]
-
-      // Handle images
-      if (itemClipboard.type.indexOf('image') !== -1) {
-        const blob = itemClipboard.getAsFile()
-        if (blob) {
-          // Create a data URL for the image
-          const reader = new FileReader()
-          reader.onload = (event) => {
-            if (event.target?.result) {
-              const imageDataUrl = event.target.result as string
-
-              // Update the item with the image in description
-              onUpdate(item.id, { description: imageDataUrl, isImage: true })
-              setTempDescription(imageDataUrl)
-            }
-          }
-          reader.readAsDataURL(blob)
-        }
-        return
-      }
-    }
-
-    // Handle plain text
-    if (text) {
-      // If we're in an edit field, insert text at cursor position
-      const target = e.target as HTMLInputElement | HTMLTextAreaElement
-      const start = target.selectionStart || 0
-      const end = target.selectionEnd || 0
-      const newValue = target.value.substring(0, start) + text + target.value.substring(end)
-      target.value = newValue
-      if (target === titleInputRef.current || target === titleTextareaRef.current) {
-        setTempTitle(newValue)
-      } else {
-        setTempDescription(newValue)
-      }
-      target.selectionStart = target.selectionEnd = start + text.length
-    }
-  }
-
-  const handleStartEditing = () => {
-    setIsEditingTitle(true)
-    setTempTitle(item.title)
-    setIsUsingTextarea(item.title.includes('\n'))
-  }
-
-  const handleStartEditingDescription = () => {
-    setIsEditingDescription(true)
-    setTempDescription(item.description || '')
-  }
-
-  const handleSaveEditing = () => {
-    const trimmedTitle = tempTitle.trim()
-    if (trimmedTitle && trimmedTitle !== item.title) {
-      onUpdate(item.id, { title: trimmedTitle })
-    }
-    setIsEditingTitle(false)
-    setIsUsingTextarea(false)
-  }
-
-  const handleSaveDescriptionEditing = () => {
-    const trimmedDescription = tempDescription.trim()
-    if (trimmedDescription !== (item.description || '')) {
-      onUpdate(item.id, { description: trimmedDescription })
-    }
-    setIsEditingDescription(false)
-  }
-
-  const handleCancelEditing = () => {
-    setTempTitle(item.title)
-    setIsEditingTitle(false)
-    setIsUsingTextarea(false)
-  }
-
-  const handleCancelDescriptionEditing = () => {
-    setTempDescription(item.description || '')
-    setIsEditingDescription(false)
-  }
-
-  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    // Ctrl+Enter or Cmd+Enter for new line
-    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-      if (isUsingTextarea) {
-        // Insert newline in textarea
-        const target = e.target as HTMLTextAreaElement
-        const start = target.selectionStart
-        const end = target.selectionEnd
-        const text = target.value
-        target.value = text.substring(0, start) + '\n' + text.substring(end)
-        target.selectionStart = target.selectionEnd = start + 1
-      } else {
-        // Switch to textarea mode
-        setIsUsingTextarea(true)
-        setTempTitle((e.target as HTMLInputElement).value)
-      }
-      e.preventDefault()
-      return
-    }
-
-    // Enter (without Ctrl/Cmd) to save
-    if (e.key === 'Enter' && !e.shiftKey) {
-      if (isUsingTextarea) {
-        handleSaveEditing()
-      } else {
-        const target = e.target as HTMLInputElement
-        setTempTitle(target.value)
-        handleSaveEditing()
-      }
-      e.preventDefault()
-    }
-
-    // Escape to cancel
-    if (e.key === 'Escape') {
-      handleCancelEditing()
-      e.preventDefault()
-    }
-  }
-
-  // Handle key events for Notion-like blocks
   const handleBlockKeyDown = (e: KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    // Ctrl+Enter or Cmd+Enter for new line
-    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-      if (isUsingTextarea) {
-        // Insert newline in textarea
-        const target = e.target as HTMLTextAreaElement
-        const start = target.selectionStart
-        const end = target.selectionEnd
-        const text = target.value
-        target.value = text.substring(0, start) + '\n' + text.substring(end)
-        target.selectionStart = target.selectionEnd = start + 1
-      } else {
-        // Switch to textarea mode
-        setIsUsingTextarea(true)
-        setTempTitle((e.target as HTMLInputElement).value)
-      }
-      e.preventDefault()
-      return
-    }
-
-    // Enter (without Ctrl/Cmd) to create new block
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       addBlock(index)
     }
 
-    // Backspace on empty input to delete block
     if (e.key === 'Backspace') {
       const target = e.target as HTMLInputElement | HTMLTextAreaElement
       if (target.value === '') {
         e.preventDefault()
         if (items.length > 1) {
           deleteBlock(item.id)
-          // Focus the previous block
           setTimeout(() => {
-            if (inputRefs.current[index - 1]) {
+            if (inputRefs.current && inputRefs.current[index - 1]) {
               inputRefs.current[index - 1]?.focus()
+            } else if (inputRefs.current && inputRefs.current[0]) {
+              inputRefs.current[0]?.focus()
             }
           }, 10)
         }
       }
     }
 
-    // Slash command to open menu
-    if (e.key === '/' && e.currentTarget.value === '') {
+    if (e.key === '/' && (e.target as HTMLInputElement | HTMLTextAreaElement).value === '') {
       e.preventDefault()
-      const rect = e.currentTarget.getBoundingClientRect()
+      const target = e.target as HTMLElement
+      const rect = target.getBoundingClientRect()
       setActiveSlashMenu({
         index,
-        position: { x: rect.left, y: rect.bottom },
+        position: { x: rect.left, y: rect.bottom + 4 },
       })
     }
+  }
 
-    // Escape to cancel
-    if (e.key === 'Escape') {
-      handleCancelEditing()
-      e.preventDefault()
+  const setRef = (el: HTMLInputElement | HTMLTextAreaElement | null) => {
+    if (inputRefs && inputRefs.current) {
+      inputRefs.current[index] = el
     }
   }
 
-  const handleDescriptionKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
-    // Ctrl+Enter or Cmd+Enter to save
-    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-      handleSaveDescriptionEditing()
-      e.preventDefault()
-      return
-    }
-
-    // Enter to save (but not Shift+Enter for new line)
-    if (e.key === 'Enter' && !e.shiftKey) {
-      handleSaveDescriptionEditing()
-      e.preventDefault()
-      return
-    }
-
-    // Escape to cancel
-    if (e.key === 'Escape') {
-      handleCancelDescriptionEditing()
-      e.preventDefault()
+  // Handle file input change
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, id: string) => {
+    if (e.target.files && e.target.files[0]) {
+      onMediaUpload(id, e.target.files[0])
     }
   }
 
-  // Focus the input/textarea when editing starts
-  useEffect(() => {
-    if (isEditingTitle) {
-      if (isUsingTextarea && titleTextareaRef.current) {
-        titleTextareaRef.current.focus()
-      } else if (titleInputRef.current) {
-        titleInputRef.current.focus()
-      }
-    }
-  }, [isEditingTitle, isUsingTextarea])
-
-  const handleReminderClick = () => {
-    setShowReminderOptions(!showReminderOptions)
-    setShowCustomTimer(false) // Hide custom timer when toggling reminder options
-  }
-
-  const handleSetReminder = (minutes: number) => {
-    onSetReminder(item.id, minutes)
-    setShowReminderOptions(false)
-  }
-
-  const handleCustomTimerSubmit = (e: React.FormEvent) => {
+  // Trigger file input click
+  const triggerFileInput = (e: React.MouseEvent) => {
     e.preventDefault()
-    handleSetReminder(customMinutes)
-  }
-
-  const handleViewMedia = () => {
-    if (item.isImage && item.description) {
-      onViewMedia({ url: item.description, type: 'image' })
+    e.stopPropagation()
+    if (fileInputRef.current) {
+      fileInputRef.current.click()
     }
   }
 
   // Render block based on type
   const renderBlock = () => {
-    const block = item as NotionBlock
-    const setRef = (el: HTMLInputElement | HTMLTextAreaElement | null) => {
-      if (inputRefs && inputRefs.current) {
-        inputRefs.current[index] = el
-      }
-    }
-
-    switch (block.type) {
+    switch (item.type) {
       case 'heading1':
         return (
           <input
             ref={setRef}
             type="text"
-            value={block.title}
-            onChange={(e) => onUpdate(block.id, { title: e.target.value })}
+            value={item.title}
+            onChange={(e) => onUpdate(item.id, { title: e.target.value })}
             onKeyDown={handleBlockKeyDown}
-            onPaste={handlePaste}
             placeholder="Heading 1"
-            className="todo-title-input heading1-input"
+            className="heading1-input"
           />
         )
       case 'heading2':
@@ -912,12 +729,11 @@ const EditableContentItem = ({
           <input
             ref={setRef}
             type="text"
-            value={block.title}
-            onChange={(e) => onUpdate(block.id, { title: e.target.value })}
+            value={item.title}
+            onChange={(e) => onUpdate(item.id, { title: e.target.value })}
             onKeyDown={handleBlockKeyDown}
-            onPaste={handlePaste}
             placeholder="Heading 2"
-            className="todo-title-input heading2-input"
+            className="heading2-input"
           />
         )
       case 'heading3':
@@ -925,12 +741,11 @@ const EditableContentItem = ({
           <input
             ref={setRef}
             type="text"
-            value={block.title}
-            onChange={(e) => onUpdate(block.id, { title: e.target.value })}
+            value={item.title}
+            onChange={(e) => onUpdate(item.id, { title: e.target.value })}
             onKeyDown={handleBlockKeyDown}
-            onPaste={handlePaste}
             placeholder="Heading 3"
-            className="todo-title-input heading3-input"
+            className="heading3-input"
           />
         )
       case 'bulleted_list':
@@ -940,12 +755,11 @@ const EditableContentItem = ({
             <input
               ref={setRef}
               type="text"
-              value={block.title}
-              onChange={(e) => onUpdate(block.id, { title: e.target.value })}
+              value={item.title}
+              onChange={(e) => onUpdate(item.id, { title: e.target.value })}
               onKeyDown={handleBlockKeyDown}
-              onPaste={handlePaste}
               placeholder="List item"
-              className="todo-title-input list-input"
+              className="list-input"
             />
           </div>
         )
@@ -956,13 +770,49 @@ const EditableContentItem = ({
             <input
               ref={setRef}
               type="text"
-              value={block.title}
-              onChange={(e) => onUpdate(block.id, { title: e.target.value })}
+              value={item.title}
+              onChange={(e) => onUpdate(item.id, { title: e.target.value })}
               onKeyDown={handleBlockKeyDown}
-              onPaste={handlePaste}
               placeholder="List item"
-              className="todo-title-input list-input"
+              className="list-input"
             />
+          </div>
+        )
+      case 'toggle':
+        return (
+          <div>
+            <div className="list-block">
+              <button
+                onClick={() =>
+                  onUpdate(item.id, {
+                    properties: { ...item.properties, isOpen: !item.properties?.isOpen },
+                  })
+                }
+                className="toggle-button">
+                {item.properties?.isOpen ? '▼' : '▶'}
+              </button>
+              <input
+                ref={setRef}
+                type="text"
+                value={item.title}
+                onChange={(e) => onUpdate(item.id, { title: e.target.value })}
+                onKeyDown={handleBlockKeyDown}
+                placeholder="Toggle"
+                className="list-input"
+                style={{ fontWeight: 500 }}
+              />
+            </div>
+            {item.properties?.isOpen && (
+              <div className="toggle-content">
+                <textarea
+                  value={item.description || ''}
+                  onChange={(e) => onUpdate(item.id, { description: e.target.value })}
+                  placeholder="Toggle content..."
+                  className="todo-description-textarea"
+                  style={{ minHeight: '60px' }}
+                />
+              </div>
+            )}
           </div>
         )
       case 'quote':
@@ -972,12 +822,72 @@ const EditableContentItem = ({
             <input
               ref={setRef}
               type="text"
-              value={block.title}
-              onChange={(e) => onUpdate(block.id, { title: e.target.value })}
+              value={item.title}
+              onChange={(e) => onUpdate(item.id, { title: e.target.value })}
               onKeyDown={handleBlockKeyDown}
-              onPaste={handlePaste}
               placeholder="Quote"
-              className="todo-title-input quote-input"
+              className="quote-input"
+            />
+          </div>
+        )
+      case 'callout':
+        return (
+          <div className="callout-block">
+            <input
+              type="text"
+              value={item.properties?.emoji || '💡'}
+              onChange={(e) =>
+                onUpdate(item.id, {
+                  properties: { ...item.properties, emoji: e.target.value },
+                })
+              }
+              className="callout-emoji"
+              maxLength={2}
+            />
+            <input
+              ref={setRef}
+              type="text"
+              value={item.title}
+              onChange={(e) => onUpdate(item.id, { title: e.target.value })}
+              onKeyDown={handleBlockKeyDown}
+              placeholder="Callout text"
+              className="callout-input"
+            />
+          </div>
+        )
+      case 'code':
+        return (
+          <div className="code-block">
+            <div className="code-header">
+              <select
+                value={item.properties?.language || 'javascript'}
+                onChange={(e) =>
+                  onUpdate(item.id, {
+                    properties: { ...item.properties, language: e.target.value },
+                  })
+                }
+                className="code-language-select">
+                <option value="javascript">JavaScript</option>
+                <option value="python">Python</option>
+                <option value="java">Java</option>
+                <option value="css">CSS</option>
+                <option value="html">HTML</option>
+              </select>
+            </div>
+            <textarea
+              ref={setRef as any}
+              value={item.title}
+              onChange={(e) => onUpdate(item.id, { title: e.target.value })}
+              onKeyDown={(e) => {
+                // Prevent adding new block when pressing Enter in textarea
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault()
+                }
+                // Pass other key events to the main handler
+                handleBlockKeyDown(e as any)
+              }}
+              placeholder="Code block"
+              className="code-textarea"
             />
           </div>
         )
@@ -987,147 +897,295 @@ const EditableContentItem = ({
             <div className="divider-line"></div>
           </div>
         )
-      case 'paragraph':
-        return (
-          <input
-            ref={setRef}
-            type="text"
-            value={block.title}
-            onChange={(e) => onUpdate(block.id, { title: e.target.value })}
-            onKeyDown={handleBlockKeyDown}
-            onPaste={handlePaste}
-            placeholder="Paragraph"
-            className="todo-title-input"
-          />
-        )
       case 'to_do':
-      default:
         return (
-          <>
+          <div className="list-block">
             <input
               type="checkbox"
-              checked={!!block.completed}
-              onChange={(e) => onToggleComplete(block.id, e.target.checked)}
+              checked={!!item.completed}
+              onChange={(e) => onToggleComplete(item.id, e.target.checked)}
               className="todo-checkbox"
             />
             <input
               ref={setRef}
               type="text"
-              value={block.title}
-              onChange={(e) => {
-                onUpdate(block.id, { title: e.target.value })
-              }}
+              value={item.title}
+              onChange={(e) => onUpdate(item.id, { title: e.target.value })}
               onKeyDown={handleBlockKeyDown}
-              onPaste={handlePaste}
-              className={`todo-title-input ${block.completed ? 'completed' : ''}`}
               placeholder="To-do"
+              className={`todo-title-input ${item.completed ? 'completed' : ''}`}
             />
-          </>
+          </div>
+        )
+      case 'image':
+        return (
+          <div className="media-block image-block">
+            {item.properties?.mediaUrl ? (
+              <div>
+                <img
+                  src={item.properties.mediaUrl}
+                  alt={item.properties.caption || 'Uploaded image'}
+                  className="media-preview"
+                  onClick={() => onViewMedia({ url: item.properties!.mediaUrl!, type: 'image' })}
+                />
+                <input
+                  ref={setRef}
+                  type="text"
+                  value={item.properties.caption || ''}
+                  onChange={(e) =>
+                    onUpdate(item.id, {
+                      properties: { ...item.properties, caption: e.target.value },
+                    })
+                  }
+                  onKeyDown={handleBlockKeyDown}
+                  placeholder="Add a caption"
+                  className="media-caption"
+                />
+              </div>
+            ) : (
+              <div className="media-upload-placeholder" onClick={triggerFileInput}>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleFileChange(e, item.id)}
+                  className="media-file-input"
+                />
+                <div className="media-upload-text">Click to upload an image</div>
+              </div>
+            )}
+          </div>
+        )
+      case 'video':
+        return (
+          <div className="media-block video-block">
+            {item.properties?.mediaUrl ? (
+              <div>
+                <video
+                  src={item.properties.mediaUrl}
+                  controls
+                  className="media-preview"
+                  onClick={() => onViewMedia({ url: item.properties!.mediaUrl!, type: 'video' })}
+                />
+                <input
+                  ref={setRef}
+                  type="text"
+                  value={item.properties.caption || ''}
+                  onChange={(e) =>
+                    onUpdate(item.id, {
+                      properties: { ...item.properties, caption: e.target.value },
+                    })
+                  }
+                  onKeyDown={handleBlockKeyDown}
+                  placeholder="Add a caption"
+                  className="media-caption"
+                />
+              </div>
+            ) : (
+              <div className="media-upload-placeholder" onClick={triggerFileInput}>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="video/*"
+                  onChange={(e) => handleFileChange(e, item.id)}
+                  className="media-file-input"
+                />
+                <div className="media-upload-text">Click to upload a video</div>
+              </div>
+            )}
+          </div>
+        )
+      case 'audio':
+        return (
+          <div className="media-block audio-block">
+            {item.properties?.mediaUrl ? (
+              <div>
+                <audio
+                  src={item.properties.mediaUrl}
+                  controls
+                  className="media-preview"
+                  onClick={() => onViewMedia({ url: item.properties!.mediaUrl!, type: 'audio' })}
+                />
+                <input
+                  ref={setRef}
+                  type="text"
+                  value={item.properties.caption || ''}
+                  onChange={(e) =>
+                    onUpdate(item.id, {
+                      properties: { ...item.properties, caption: e.target.value },
+                    })
+                  }
+                  onKeyDown={handleBlockKeyDown}
+                  placeholder="Add a caption"
+                  className="media-caption"
+                />
+              </div>
+            ) : (
+              <div className="media-upload-placeholder" onClick={triggerFileInput}>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="audio/*"
+                  onChange={(e) => handleFileChange(e, item.id)}
+                  className="media-file-input"
+                />
+                <div className="media-upload-text">Click to upload an audio file</div>
+              </div>
+            )}
+          </div>
+        )
+      case 'file':
+        return (
+          <div className="media-block file-block">
+            {item.properties?.mediaUrl ? (
+              <div className="file-preview">
+                <div className="file-icon">📎</div>
+                <div className="file-info">
+                  <div className="file-name">{item.properties.filename || 'Download file'}</div>
+                  <input
+                    ref={setRef}
+                    type="text"
+                    value={item.properties.caption || ''}
+                    onChange={(e) =>
+                      onUpdate(item.id, {
+                        properties: { ...item.properties, caption: e.target.value },
+                      })
+                    }
+                    onKeyDown={handleBlockKeyDown}
+                    placeholder="Add a caption"
+                    className="media-caption"
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className="media-upload-placeholder" onClick={triggerFileInput}>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  onChange={(e) => handleFileChange(e, item.id)}
+                  className="media-file-input"
+                />
+                <div className="media-upload-text">Click to upload a file</div>
+              </div>
+            )}
+          </div>
+        )
+      case 'gallery':
+        return (
+          <div className="media-block gallery-block">
+            <div className="gallery-layout">
+              {item.properties?.images?.map((imageUrl, imgIndex) => (
+                <img
+                  key={imgIndex}
+                  src={imageUrl}
+                  alt={`Gallery image ${imgIndex + 1}`}
+                  className="gallery-image"
+                  onClick={() => onViewMedia({ url: imageUrl, type: 'image' })}
+                />
+              ))}
+              <div className="gallery-upload-placeholder" onClick={triggerFileInput}>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={(e) => {
+                    if (e.target.files) {
+                      const urls = Array.from(e.target.files).map((file) =>
+                        URL.createObjectURL(file)
+                      )
+                      onUpdate(item.id, {
+                        properties: {
+                          ...item.properties,
+                          images: [...(item.properties?.images || []), ...urls],
+                        },
+                      })
+                    }
+                  }}
+                  className="media-file-input"
+                />
+                <div className="media-upload-text">+ Add images</div>
+              </div>
+            </div>
+          </div>
+        )
+      case 'paragraph':
+      default:
+        return (
+          <input
+            ref={setRef}
+            type="text"
+            value={item.title}
+            onChange={(e) => onUpdate(item.id, { title: e.target.value })}
+            onKeyDown={handleBlockKeyDown}
+            onPaste={(e) => onPaste(e, item.id)}
+            placeholder="Type '/' for commands"
+            className="paragraph-input"
+          />
         )
     }
   }
 
   return (
     <div
-      className={`editable-content-item todo-item ${isDraggedOver ? 'drag-over' : ''}`}
+      className={`editable-content-item ${isDraggedOver ? 'drag-over' : ''}`}
       draggable
       onDragStart={(e) => onDragStart(e, item)}
       onDragOver={(e) => onDragOver(e, index)}
       onDragLeave={onDragLeave}
       onDrop={(e) => onDrop(e, index)}
-      onDragEnd={onDragEnd}>
+      onDragEnd={onDragEnd}
+      onMouseEnter={() => setShowActions(true)}
+      onMouseLeave={() => setShowActions(false)}>
       <div className="todo-content">
-        <div className="todo-main-content">
-          <div className="todo-title-wrapper">{renderBlock()}</div>
-
-          {/* Description section */}
-          {isEditingDescription ? (
-            <div className="todo-description-edit">
-              {item.isImage ? (
-                <div className="todo-image-wrapper">
-                  <img src={tempDescription} alt="Todo attachment" className="todo-image" />
-                </div>
-              ) : null}
-              <textarea
-                value={tempDescription}
-                onChange={(e) => setTempDescription(e.target.value)}
-                onKeyDown={handleDescriptionKeyDown}
-                onBlur={handleSaveDescriptionEditing}
-                onPaste={handlePaste}
-                placeholder="Add description..."
-                className="todo-description-textarea"
-                autoFocus
-              />
-            </div>
-          ) : item.description ? (
-            <div
-              className={`todo-description ${item.isImage ? 'todo-image-description' : ''}`}
-              onClick={item.isImage ? handleViewMedia : handleStartEditingDescription}>
-              {item.isImage ? (
-                <div className="todo-image-wrapper">
-                  <img src={item.description} alt="Todo attachment" className="todo-image" />
-                  <div className="todo-image-overlay">
-                    <span className="todo-image-label">Click to view</span>
-                  </div>
-                </div>
-              ) : (
-                <div className="todo-text-description">{item.description}</div>
-              )}
-            </div>
-          ) : (
-            <div
-              className="todo-description todo-description-placeholder"
-              onClick={handleStartEditingDescription}>
-              Add description...
-            </div>
-          )}
+        {/* Drag handle */}
+        <div className="drag-handle" title="Drag to reorder">
+          ⋮⋮
         </div>
-        <div className="content-item-actions">
-          <button
-            className={`reminder-button ${item.reminderEnabled ? 'active' : ''}`}
-            onClick={handleReminderClick}
-            title={item.reminderEnabled ? 'Reminder set' : 'Set reminder'}>
-            ⏰
-          </button>
+
+        {/* Block content */}
+        <div className="todo-main-content">{renderBlock()}</div>
+
+        {/* Action buttons */}
+        <div className={`content-item-actions ${showActions ? 'visible' : ''}`}>
+          {item.type === 'to_do' && (
+            <button
+              className={`reminder-button ${item.reminderEnabled ? 'active' : ''}`}
+              onClick={() => setShowReminderOptions(!showReminderOptions)}
+              title={item.reminderEnabled ? 'Reminder set' : 'Set reminder'}>
+              ⏰
+            </button>
+          )}
+
           <button className="delete-button" onClick={() => onDelete(item.id)}>
             Delete
           </button>
         </div>
       </div>
 
+      {/* Reminder options */}
       {showReminderOptions && (
         <div className="reminder-options">
-          <button onClick={() => handleSetReminder(1)}>1 min</button>
-          <button onClick={() => handleSetReminder(5)}>5 min</button>
-          <button onClick={() => handleSetReminder(10)}>10 min</button>
-          <button onClick={() => handleSetReminder(30)}>30 min</button>
-          <button onClick={() => handleSetReminder(60)}>1 hour</button>
-          <button onClick={() => setShowCustomTimer(true)}>Custom</button>
+          {[
+            { label: '1 min', value: 1 },
+            { label: '5 min', value: 5 },
+            { label: '10 min', value: 10 },
+            { label: '30 min', value: 30 },
+            { label: '1 hour', value: 60 },
+          ].map((option) => (
+            <button
+              key={option.value}
+              onClick={() => {
+                onSetReminder(item.id, option.value)
+                setShowReminderOptions(false)
+              }}>
+              {option.label}
+            </button>
+          ))}
         </div>
       )}
 
-      {showCustomTimer && (
-        <form className="custom-timer-form" onSubmit={handleCustomTimerSubmit}>
-          <input
-            type="number"
-            min="1"
-            value={customMinutes}
-            onChange={(e) => setCustomMinutes(Math.max(1, parseInt(e.target.value) || 1))}
-            className="custom-timer-input"
-          />
-          <span>minutes</span>
-          <button type="submit" className="set-timer-button">
-            Set
-          </button>
-          <button
-            type="button"
-            className="cancel-timer-button"
-            onClick={() => setShowCustomTimer(false)}>
-            Cancel
-          </button>
-        </form>
-      )}
-
+      {/* Reminder info */}
       {item.reminderEnabled && item.reminderTime && (
         <div className="reminder-info">
           Reminder set for{' '}
