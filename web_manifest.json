@@ -1,0 +1,43 @@
+{
+  "short_name": "Devare.dev",
+  "name": "All developer news in one tab",
+  "description": "Devare helps developers stay up-to-date with the latest dev trends and tools",
+  "icons": [
+    {
+      "src": "/logos/devare-logo.svg",
+      "type": "image/svg+xml",
+      "sizes": "128x128"
+    },
+    {
+      "src": "/logos/logo192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/logos/logo512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/screenshot_mobile_1.webp",
+      "sizes": "485x1024",
+      "type": "image/webp",
+      "form_factor": "narrow",
+      "label": "Devare is available on Desktop and Mobile."
+    },
+    {
+      "src": "/screenshots/screenshot_desktop_1.webp",
+      "sizes": "1280x720",
+      "type": "image/webp",
+      "form_factor": "wide",
+      "label": "Devare is available on Desktop and Mobile."
+    }
+  ],
+  "start_url": "/?source=pwa",
+  "background_color": "#000000",
+  "display": "standalone",
+  "scope": "/",
+  "theme_color": "#000000"
+}

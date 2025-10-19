@@ -1,0 +1,12 @@
+{
+  "background": {
+    "scripts": [
+      "src/features/rssFinder/backgroundScript.js"
+    ]
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "{f8793186-e9da-4332-aa1e-dc3d9f7bb04c}"
+    }
+  }
+}
