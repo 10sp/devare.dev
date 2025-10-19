@@ -31,3 +31,5 @@ chrome_extension/
 script/
 package-lock.json
 yarn.lock
+android/
+production/

@@ -5,7 +5,7 @@ import { BeatLoader } from 'react-spinners'
 import 'src/assets/App.css'
 import { AuthModal, useAuth } from 'src/features/auth'
 import { usePostStreak } from 'src/features/hits'
-import { MarketingBanner } from 'src/features/MarketingBanner'
+// Removed MarketingBanner import
 import { identifyUserStreak } from 'src/lib/analytics'
 import { AuthProvider } from 'src/providers/AuthProvider'
 import { Header } from './Header'
@@ -25,7 +25,7 @@ export const AppLayout = () => {
 
   return (
     <AuthProvider>
-      <MarketingBanner />
+      {/* Removed MarketingBanner component */}
 
       <div className="App">
         <Header />

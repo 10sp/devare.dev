@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Hackertab.dev - developer news",
+  "name": "devare.dev - developer news",
   "description": "All developer news in one tab",
   "version": "1.24.4",
   "chrome_url_overrides": {
