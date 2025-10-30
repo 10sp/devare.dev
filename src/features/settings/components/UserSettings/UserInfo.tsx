@@ -21,10 +21,10 @@ export const UserInfo = () => {
           <AvatarPlaceholder className="userImage" />
           <div className="userInfo">
             <div className="userName">
-              Join <b>Hackertab</b>
+              Join <b>Devare</b>
             </div>
             <div className="description">
-              Create a free account on <b>Hackertab</b> to sync, save bookmarks, and earn rewards.
+              Create a free account on <b>Devare</b> to sync, save bookmarks, and earn rewards.
             </div>
             <div className="actions">
               <Button className="logoutBtn" onClick={() => openAuthModal()} size="small">

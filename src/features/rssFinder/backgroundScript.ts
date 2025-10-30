@@ -6,7 +6,7 @@
 // Listen for messages from content scripts
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.type === 'ADD_RSS_FEEDS') {
-    // Handle adding RSS feeds to HackerTab
+    // Handle adding RSS feeds to Devare
     handleAddRssFeeds(request.feeds, request.sourceUrl, request.sourceTitle)
     sendResponse({ success: true })
   }
@@ -20,7 +20,7 @@ const handleAddRssFeeds = async (
   sourceTitle: string
 ) => {
   try {
-    // Store the feeds in chrome storage for the HackerTab extension to pick up
+    // Store the feeds in chrome storage for the Devare extension to pick up
     const storageKey = 'rss_feeds_to_add'
 
     // Get existing feeds to add
@@ -33,18 +33,18 @@ const handleAddRssFeeds = async (
     // Save to storage
     await chrome.storage.local.set({ [storageKey]: updatedFeeds })
 
-    // Optionally, send a message to the HackerTab extension to refresh
-    // This would require the HackerTab extension to listen for this message
+    // Optionally, send a message to the Devare extension to refresh
+    // This would require the Devare extension to listen for this message
     chrome.runtime
       .sendMessage({
         type: 'REFRESH_HACKERTAB_RSS_FEEDS',
         feeds: feeds,
       })
       .catch(() => {
-        // Ignore errors if HackerTab is not listening
+        // Ignore errors if Devare is not listening
       })
 
-    console.log('RSS feeds saved for addition to HackerTab')
+    console.log('RSS feeds saved for addition to Devare')
   } catch (error) {
     console.error('Error handling RSS feeds:', error)
   }
@@ -89,7 +89,7 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
   }
 })
 
-// Listen for when HackerTab wants to get the feeds to add
+// Listen for when Devare wants to get the feeds to add
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.type === 'GET_RSS_FEEDS_TO_ADD') {
     chrome.storage.local.get('rss_feeds_to_add').then((result) => {

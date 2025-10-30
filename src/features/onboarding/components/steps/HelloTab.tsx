@@ -89,8 +89,8 @@ export const HelloTab = ({
   return (
     <div>
       <div className="tabHeader">
-        <h1 className="tabTitle">Hi, 👋 Welcome to Hackertab</h1>
-        <p className="tabBody">Let's customize your Hackertab experience!</p>
+        <h1 className="tabTitle">Hi, 👋 Welcome to Devare</h1>
+        <p className="tabBody">Let's customize your Devare experience!</p>
       </div>
       <div className="occupations">
         {OCCUPATIONS.map((occ) => {

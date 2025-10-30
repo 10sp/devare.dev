@@ -114,7 +114,7 @@
     "vite-plugin-svgr": "^4.3.0",
     "vite-tsconfig-paths": "^4.2.0"
   },
-  "description": "[![Website hackertab.dev](https://img.shields.io/website-up-down-green-red/https/hackertab.dev.svg)](https://hackertab.dev/)\r [![Apache 2 license](https://img.shields.io/badge/license-Apache%202-blue.svg)](https://github.com/10sp/devare.dev/blob/master/LICENSE)\r [![Mozilla Add-on](https://img.shields.io/amo/v/hackertab-dev?style=plastic)](https://bit.ly/hackertab-ff)\r [![Chrome Web Store](https://img.shields.io/chrome-web-store/v/ocoipcahhaedjhnpoanfflhbdcpmalmp?style=plastic)](https://bit.ly/hackertab-ch)\r [![Chrome Web Store Rating](https://img.shields.io/chrome-web-store/stars/ocoipcahhaedjhnpoanfflhbdcpmalmp.svg?colorB=%234FC828&label=rating&style=flat)](https://chrome.google.com/webstore/detail/hackertabdev/ocoipcahhaedjhnpoanfflhbdcpmalmp/reviews)",
+  "description": "[![Website devare.dev](https://img.shields.io/website-up-down-green-red/https/devare.dev.svg)](https://devare.dev/)\r [![Apache 2 license](https://img.shields.io/badge/license-Apache%202-blue.svg)](https://github.com/10sp/devare.dev/blob/master/LICENSE)\r [![Mozilla Add-on](https://img.shields.io/amo/v/Devare-dev?style=plastic)](https://bit.ly/Devare-ff)\r [![Chrome Web Store](https://img.shields.io/chrome-web-store/v/ocoipcahhaedjhnpoanfflhbdcpmalmp?style=plastic)](https://bit.ly/Devare-ch)\r [![Chrome Web Store Rating](https://img.shields.io/chrome-web-store/stars/ocoipcahhaedjhnpoanfflhbdcpmalmp.svg?colorB=%234FC828&label=rating&style=flat)](https://chrome.google.com/webstore/detail/hackertabdev/ocoipcahhaedjhnpoanfflhbdcpmalmp/reviews)",
   "main": "jest.config.js",
   "repository": {
     "type": "git",

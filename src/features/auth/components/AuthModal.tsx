@@ -56,7 +56,7 @@ export const AuthModal = ({ showAuth }: AuthModalProps) => {
 
       if (!permissionCheck) {
         setAuthError({
-          message: 'Hackertab needs permission to Sign in, Please request it and try again',
+          message: 'Devare needs permission to Sign in, Please request it and try again',
         })
       } else {
         requestOauthLink(provider)
@@ -83,7 +83,7 @@ export const AuthModal = ({ showAuth }: AuthModalProps) => {
       onClose={closeAuthModal}
       header={{
         className: 'header',
-        title: 'Join Hackertab',
+        title: 'Join Devare.dev',
         icon: <IoHeartCircle style={{ fontSize: '1.2em' }} />,
       }}
       className="authModal">

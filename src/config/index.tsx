@@ -8,7 +8,7 @@ export const BUILD_TARGET = (import.meta.env.VITE_BUILD_TARGET as 'web' | 'exten
 export const SENTRY_DSN = import.meta.env.VITE_SENTRY_DSN
 
 // Meta
-export const name = 'Hackertab.dev'
+export const name = 'devare.dev'
 export const slogan = '— Stay updated with the new technology and trends'
 export const repository = 'https://github.com/10sp/devare.dev'
 export const ref = 'ref=devare.dev'

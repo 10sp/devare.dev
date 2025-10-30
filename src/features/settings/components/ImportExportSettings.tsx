@@ -169,7 +169,7 @@ export const ImportExportSettings = () => {
   return (
     <SettingsContentLayout
       title="Import/Export Settings"
-      description="Backup and restore your HackerTab configuration including news sources, search engines, and preferences.">
+      description="Backup and restore your Devare configuration including news sources, search engines, and preferences.">
       <div className="settingRow">
         <p className="settingTitle">Export Settings</p>
         <div className="settingContent">
